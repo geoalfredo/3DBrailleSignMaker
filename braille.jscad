@@ -7,6 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
+// Versão 2.1 esquerda: texto latino por traços, alinhado à esquerda, e Braille abaixo.
 
 var characters =
 {
@@ -255,72 +256,99 @@ function cleanLatinText(text)
 }
 
 
-// Fonte simples 5x7 em blocos. Não depende de vector_text.
-// É menos elegante que uma fonte vetorial, mas funciona na versão antiga do OpenJSCAD usada pelo app.
-var latinPixelFont = {
-	"A":["01110","10001","10001","11111","10001","10001","10001"],
-	"B":["11110","10001","10001","11110","10001","10001","11110"],
-	"C":["01111","10000","10000","10000","10000","10000","01111"],
-	"D":["11110","10001","10001","10001","10001","10001","11110"],
-	"E":["11111","10000","10000","11110","10000","10000","11111"],
-	"F":["11111","10000","10000","11110","10000","10000","10000"],
-	"G":["01111","10000","10000","10111","10001","10001","01111"],
-	"H":["10001","10001","10001","11111","10001","10001","10001"],
-	"I":["11111","00100","00100","00100","00100","00100","11111"],
-	"J":["00111","00010","00010","00010","00010","10010","01100"],
-	"K":["10001","10010","10100","11000","10100","10010","10001"],
-	"L":["10000","10000","10000","10000","10000","10000","11111"],
-	"M":["10001","11011","10101","10101","10001","10001","10001"],
-	"N":["10001","11001","10101","10011","10001","10001","10001"],
-	"O":["01110","10001","10001","10001","10001","10001","01110"],
-	"P":["11110","10001","10001","11110","10000","10000","10000"],
-	"Q":["01110","10001","10001","10001","10101","10010","01101"],
-	"R":["11110","10001","10001","11110","10100","10010","10001"],
-	"S":["01111","10000","10000","01110","00001","00001","11110"],
-	"T":["11111","00100","00100","00100","00100","00100","00100"],
-	"U":["10001","10001","10001","10001","10001","10001","01110"],
-	"V":["10001","10001","10001","10001","10001","01010","00100"],
-	"W":["10001","10001","10001","10101","10101","10101","01010"],
-	"X":["10001","10001","01010","00100","01010","10001","10001"],
-	"Y":["10001","10001","01010","00100","00100","00100","00100"],
-	"Z":["11111","00001","00010","00100","01000","10000","11111"],
-	"0":["01110","10001","10011","10101","11001","10001","01110"],
-	"1":["00100","01100","00100","00100","00100","00100","01110"],
-	"2":["01110","10001","00001","00010","00100","01000","11111"],
-	"3":["11110","00001","00001","01110","00001","00001","11110"],
-	"4":["00010","00110","01010","10010","11111","00010","00010"],
-	"5":["11111","10000","10000","11110","00001","00001","11110"],
-	"6":["01110","10000","10000","11110","10001","10001","01110"],
-	"7":["11111","00001","00010","00100","01000","01000","01000"],
-	"8":["01110","10001","10001","01110","10001","10001","01110"],
-	"9":["01110","10001","10001","01111","00001","00001","01110"],
-	"-":["00000","00000","00000","11111","00000","00000","00000"],
-	".":["00000","00000","00000","00000","00000","01100","01100"],
-	",":["00000","00000","00000","00000","01100","01100","01000"],
-	":":["00000","01100","01100","00000","01100","01100","00000"],
-	"/":["00001","00010","00010","00100","01000","01000","10000"],
-	"?":["01110","10001","00001","00010","00100","00000","00100"],
-	" ":["00000","00000","00000","00000","00000","00000","00000"]
+
+// Fonte geométrica por traços, mais próxima de letras vetoriais.
+// Não usa vector_text, pois a versão antiga do OpenJSCAD deste app não possui essa função.
+// Cada letra é composta por segmentos retangulares finos em relevo.
+var latinStrokeFont = {
+	"A":{w:5,s:[[0,7,2.5,0],[5,7,2.5,0],[1.2,4,3.8,4]]},
+	"B":{w:5,s:[[0,0,0,7],[0,0,3.4,0],[3.4,0,4.5,1],[4.5,1,4.5,2.7],[4.5,2.7,3.4,3.5],[0,3.5,3.4,3.5],[3.4,3.5,4.6,4.4],[4.6,4.4,4.6,6],[4.6,6,3.4,7],[0,7,3.4,7]]},
+	"C":{w:5,s:[[4.5,0.5,3.5,0],[3.5,0,1,0],[1,0,0,1],[0,1,0,6],[0,6,1,7],[1,7,3.5,7],[3.5,7,4.5,6.5]]},
+	"D":{w:5,s:[[0,0,0,7],[0,0,3.2,0],[3.2,0,4.5,1.2],[4.5,1.2,4.5,5.8],[4.5,5.8,3.2,7],[0,7,3.2,7]]},
+	"E":{w:5,s:[[0,0,0,7],[0,0,4.7,0],[0,3.5,3.8,3.5],[0,7,4.7,7]]},
+	"F":{w:5,s:[[0,0,0,7],[0,0,4.7,0],[0,3.5,3.8,3.5]]},
+	"G":{w:5,s:[[4.5,0.8,3.6,0],[3.6,0,1,0],[1,0,0,1],[0,1,0,6],[0,6,1,7],[1,7,3.7,7],[3.7,7,4.7,6],[4.7,6,4.7,4.2],[4.7,4.2,2.7,4.2]]},
+	"H":{w:5,s:[[0,0,0,7],[5,0,5,7],[0,3.5,5,3.5]]},
+	"I":{w:3,s:[[0,0,3,0],[1.5,0,1.5,7],[0,7,3,7]]},
+	"J":{w:5,s:[[1,0,5,0],[3.5,0,3.5,6],[3.5,6,2.5,7],[2.5,7,1,7],[1,7,0,6]]},
+	"K":{w:5,s:[[0,0,0,7],[5,0,0,3.7],[0,3.7,5,7]]},
+	"L":{w:5,s:[[0,0,0,7],[0,7,4.6,7]]},
+	"M":{w:6,s:[[0,7,0,0],[0,0,3,3.2],[3,3.2,6,0],[6,0,6,7]]},
+	"N":{w:5,s:[[0,7,0,0],[0,0,5,7],[5,7,5,0]]},
+	"O":{w:5,s:[[1,0,4,0],[4,0,5,1],[5,1,5,6],[5,6,4,7],[4,7,1,7],[1,7,0,6],[0,6,0,1],[0,1,1,0]]},
+	"P":{w:5,s:[[0,0,0,7],[0,0,3.6,0],[3.6,0,4.7,1],[4.7,1,4.7,2.8],[4.7,2.8,3.6,3.6],[0,3.6,3.6,3.6]]},
+	"Q":{w:5,s:[[1,0,4,0],[4,0,5,1],[5,1,5,6],[5,6,4,7],[4,7,1,7],[1,7,0,6],[0,6,0,1],[0,1,1,0],[3.1,5.2,5.2,7.3]]},
+	"R":{w:5,s:[[0,0,0,7],[0,0,3.6,0],[3.6,0,4.7,1],[4.7,1,4.7,2.8],[4.7,2.8,3.6,3.6],[0,3.6,3.6,3.6],[2.5,3.6,5,7]]},
+	"S":{w:5,s:[[4.5,0.5,3.6,0],[3.6,0,1,0],[1,0,0,1],[0,1,0.8,3],[0.8,3,3.8,4],[3.8,4,4.7,5.2],[4.7,5.2,3.7,7],[3.7,7,1,7],[1,7,0.2,6.4]]},
+	"T":{w:5,s:[[0,0,5,0],[2.5,0,2.5,7]]},
+	"U":{w:5,s:[[0,0,0,6],[0,6,1,7],[1,7,4,7],[4,7,5,6],[5,6,5,0]]},
+	"V":{w:5,s:[[0,0,2.5,7],[5,0,2.5,7]]},
+	"W":{w:7,s:[[0,0,1.3,7],[1.3,7,3.5,3.8],[3.5,3.8,5.7,7],[5.7,7,7,0]]},
+	"X":{w:5,s:[[0,0,5,7],[5,0,0,7]]},
+	"Y":{w:5,s:[[0,0,2.5,3.5],[5,0,2.5,3.5],[2.5,3.5,2.5,7]]},
+	"Z":{w:5,s:[[0,0,5,0],[5,0,0,7],[0,7,5,7]]},
+	"0":{w:5,s:[[1,0,4,0],[4,0,5,1],[5,1,5,6],[5,6,4,7],[4,7,1,7],[1,7,0,6],[0,6,0,1],[0,1,1,0],[1.2,6,3.8,1]]},
+	"1":{w:3,s:[[1.5,0,1.5,7],[0.5,1,1.5,0],[0.5,7,2.7,7]]},
+	"2":{w:5,s:[[0.5,1,1.3,0],[1.3,0,4,0],[4,0,5,1],[5,1,4.2,2.6],[4.2,2.6,0,7],[0,7,5,7]]},
+	"3":{w:5,s:[[0.3,0,4.5,0],[4.5,0,2.7,3.3],[2.7,3.3,4.6,3.9],[4.6,3.9,4.8,6],[4.8,6,3.7,7],[3.7,7,0.5,7]]},
+	"4":{w:5,s:[[4,0,4,7],[0,4.5,5,4.5],[0,4.5,4,0]]},
+	"5":{w:5,s:[[5,0,0.5,0],[0.5,0,0,3.5],[0,3.5,3.8,3.5],[3.8,3.5,5,4.6],[5,4.6,4.6,6],[4.6,6,3.5,7],[3.5,7,0.5,7]]},
+	"6":{w:5,s:[[4.4,0.5,3.4,0],[3.4,0,1,0.5],[1,0.5,0,2.5],[0,2.5,0,6],[0,6,1,7],[1,7,4,7],[4,7,5,6],[5,6,5,4.6],[5,4.6,4,3.5],[4,3.5,0,3.5]]},
+	"7":{w:5,s:[[0,0,5,0],[5,0,1.5,7]]},
+	"8":{w:5,s:[[1,0,4,0],[4,0,5,1],[5,1,4.2,3.3],[4.2,3.3,1,3.3],[1,3.3,0,1],[0,1,1,0],[1,3.3,0,5.8],[0,5.8,1,7],[1,7,4,7],[4,7,5,5.8],[5,5.8,4.2,3.3]]},
+	"9":{w:5,s:[[5,4.5,4,6.8],[4,6.8,1,7],[1,7,0,6],[0,6,0,4.5],[0,4.5,1,3.5],[1,3.5,5,3.5],[5,3.5,5,1],[5,1,4,0],[4,0,1,0],[1,0,0.2,0.5]]},
+	"-":{w:4,s:[[0,3.5,4,3.5]]},
+	".":{w:2,s:[[1,6.6,1,7]]},
+	",":{w:2,s:[[1,6.5,0.4,7.7]]},
+	":":{w:2,s:[[1,2,1,2.2],[1,5.5,1,5.7]]},
+	"/":{w:5,s:[[5,0,0,7]]},
+	"?":{w:5,s:[[0.5,1,1.5,0],[1.5,0,3.8,0],[3.8,0,4.8,1],[4.8,1,4.2,2.4],[4.2,2.4,2.5,3.7],[2.5,5.2,2.5,5.4]]},
+	" ":{w:3,s:[]}
 };
 
-function latinCharPattern(ch)
+function latinCharData(ch)
 {
 	ch = ch.toUpperCase();
-	if (typeof latinPixelFont[ch] != "undefined")
-		return latinPixelFont[ch];
-	return latinPixelFont["?"];
+	if (typeof latinStrokeFont[ch] != "undefined")
+		return latinStrokeFont[ch];
+	return latinStrokeFont["?"];
 }
 
 function latinLineWidth(line)
 {
 	var cell = parameters.latin_size / 7.0;
-	var charAdvance = cell * 6.0;
-	if (line.length == 0)
-		return 0;
-	return line.length * charAdvance - cell;
+	var spacing = cell * 1.15;
+	var width = 0;
+	for (var i=0; i<line.length; i++)
+	{
+		var data = latinCharData(line.charAt(i));
+		width += data.w * cell;
+		if (i < line.length-1)
+			width += spacing;
+	}
+	return width;
 }
 
-function latinTextObject(text, x, y)
+function latinStrokeSegment(x1, y1, x2, y2, scale, xOffset, yTop)
+{
+	var sx1 = xOffset + x1 * scale;
+	var sy1 = yTop - y1 * scale;
+	var sx2 = xOffset + x2 * scale;
+	var sy2 = yTop - y2 * scale;
+	var dx = sx2 - sx1;
+	var dy = sy2 - sy1;
+	var length = Math.sqrt(dx*dx + dy*dy);
+	if (length < 0.001)
+		length = parameters.latin_stroke_width;
+	var angle = Math.atan2(dy, dx) * 180.0 / Math.PI;
+	var zHeight = parameters.latin_height;
+	var stroke = parameters.latin_stroke_width;
+	var obj = CSG.cube({ center: [0, 0, zHeight/2], radius: [length/2, stroke/2, zHeight/2] });
+	obj = obj.rotateZ(angle).translate([(sx1+sx2)/2, (sy1+sy2)/2, 0]);
+	return obj.setColor(colorDot[0], colorDot[1], colorDot[2]);
+}
+
+function latinTextObject(text, plateWidth, y)
 {
 	if (!parameters.latin_enabled)
 		return new CSG();
@@ -329,29 +357,23 @@ function latinTextObject(text, x, y)
 	var lines = cleanText.split("\n");
 	var result = new CSG();
 	var cell = parameters.latin_size / 7.0;
-	var block = Math.max(0.15, cell * 0.82);
+	var spacing = cell * 1.15;
 	var lineHeight = parameters.latin_size * 1.45;
-	var zHeight = parameters.latin_height;
 
 	for (var i=0; i<lines.length; i++)
 	{
 		var line = lines[i];
+		var x = parameters.plate_margin; // alinhado à esquerda
+		var yTop = y - i * lineHeight;
 		for (var c=0; c<line.length; c++)
 		{
-			var pattern = latinCharPattern(line.charAt(c));
-			for (var row=0; row<7; row++)
+			var data = latinCharData(line.charAt(c));
+			for (var s=0; s<data.s.length; s++)
 			{
-				for (var col=0; col<5; col++)
-				{
-					if (pattern[row].charAt(col) != "1")
-						continue;
-					var cx = x + c * cell * 6.0 + col * cell + cell/2;
-					var cy = y - i * lineHeight - row * cell - cell/2;
-					var cube = CSG.cube({ center: [cx, cy, zHeight/2], radius: [block/2, block/2, zHeight/2] });
-					cube = cube.setColor(colorDot[0], colorDot[1], colorDot[2]);
-					result = result.union(cube);
-				}
+				var seg = data.s[s];
+				result = result.union(latinStrokeSegment(seg[0], seg[1], seg[2], seg[3], cell, x, yTop));
 			}
+			x += data.w * cell + spacing;
 		}
 	}
 
@@ -440,7 +462,7 @@ function generate(text)
 
 	var latinDims = latinTextDimensions(originalText);
 	var extraLatinHeight = parameters.latin_enabled ? (latinDims[1] + parameters.latin_gap) : 0;
-	var offset = new CSG.Vector3D(parameters.plate_margin, -parameters.plate_margin - extraLatinHeight, 0);
+	var offset = new CSG.Vector3D(0, -parameters.plate_margin - extraLatinHeight, 0);
 
 	var isMultiCharForm = false;
 	var multiChars = "";
@@ -503,6 +525,9 @@ function generate(text)
 	var brailleWidth = textWidth * parameters.form_distance;
 	var brailleHeight = numLines * parameters.line_height;
 	var plateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
+	var brailleStartX = parameters.plate_margin; // Braille também alinhado à esquerda
+	for (var tc=0; tc<theCharacters.length; tc++)
+		theCharacters[tc] = theCharacters[tc].translate([brailleStartX, 0, 0]);
 	var plateHeight = extraLatinHeight + brailleHeight + parameters.plate_margin * 2;
 
 	result = CSG.cube({
@@ -513,7 +538,7 @@ function generate(text)
 
 	if (parameters.latin_enabled)
 	{
-		var latin = latinTextObject(originalText, parameters.plate_margin, -parameters.plate_margin);
+		var latin = latinTextObject(originalText, plateWidth, -parameters.plate_margin);
 		result = result.union(latin);
 	}
 
@@ -556,7 +581,7 @@ function getParameterDefinitions()
 		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
 		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
 		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
-		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 0.8 },
+		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 0.45 },
 		{ name: 'latin_gap', caption: 'Espaço entre texto latino e Braille (mm):', type: 'float', initial: 3.0 },
 		{ name: 'upper', caption: 'Maiúsculo', type: 'bool', initial: false },
 		{ name: 'contractions', caption: 'Contrações', type: 'bool', initial: false, visible: false },
