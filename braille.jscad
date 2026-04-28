@@ -236,23 +236,15 @@ function characterByDots(dots)
 
 function cleanLatinText(text)
 {
-	// O texto vetorial do OpenJSCAD antigo aceita apenas caracteres ASCII.
-	// Por isso, mantemos acentos no Braille, mas removemos acentos do texto latino em relevo.
-	var map = {
-		"á":"a","à":"a","ã":"a","â":"a","ä":"a","Á":"A","À":"A","Ã":"A","Â":"A","Ä":"A",
-		"é":"e","è":"e","ê":"e","ë":"e","É":"E","È":"E","Ê":"E","Ë":"E",
-		"í":"i","ì":"i","î":"i","ï":"i","Í":"I","Ì":"I","Î":"I","Ï":"I",
-		"ó":"o","ò":"o","õ":"o","ô":"o","ö":"o","Ó":"O","Ò":"O","Õ":"O","Ô":"O","Ö":"O",
-		"ú":"u","ù":"u","û":"u","ü":"u","Ú":"U","Ù":"U","Û":"U","Ü":"U",
-		"ç":"c","Ç":"C","ñ":"n","Ñ":"N"
-	};
+	// Versão para português: mantém acentos e ç no texto latino em relevo.
+	var allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ÁÀÃÂÉÈÊÍÌÎÓÒÕÔÚÙÛÇáàãâéèêíìîóòõôúùûç.,:;!?-/()ºª\n";
 	var result = "";
 	for (var i=0; i<text.length; i++)
 	{
 		var ch = text.charAt(i);
-		result += (typeof map[ch] == "undefined") ? ch : map[ch];
+		result += (allowed.indexOf(ch) >= 0) ? ch : "?";
 	}
-	return result.replace(/[^\x20-\x7E\n]/g, "?");
+	return result;
 }
 
 
@@ -305,6 +297,69 @@ var latinStrokeFont = {
 	"?":{w:5,s:[[0.5,1,1.5,0],[1.5,0,3.8,0],[3.8,0,4.8,1],[4.8,1,4.2,2.4],[4.2,2.4,2.5,3.7],[2.5,5.2,2.5,5.4]]},
 	" ":{w:3,s:[]}
 };
+
+// Complemento para português: acentos e cedilha para teclado ABNT2.
+function cloneSegments(segs)
+{
+	var out = [];
+	for (var i=0; i<segs.length; i++)
+		out.push([segs[i][0], segs[i][1], segs[i][2], segs[i][3]]);
+	return out;
+}
+
+function accentedLatin(base, accent)
+{
+	var baseData = latinStrokeFont[base];
+	var segs = cloneSegments(baseData.s);
+	var w = baseData.w;
+	var cx = w / 2.0;
+	if (accent == "acute")
+		segs.push([cx-0.6, -0.55, cx+0.8, -1.35]);
+	else if (accent == "grave")
+		segs.push([cx+0.6, -0.55, cx-0.8, -1.35]);
+	else if (accent == "circumflex")
+	{
+		segs.push([cx-1.0, -0.55, cx, -1.35]);
+		segs.push([cx, -1.35, cx+1.0, -0.55]);
+	}
+	else if (accent == "tilde")
+	{
+		segs.push([cx-1.4, -0.95, cx-0.6, -1.35]);
+		segs.push([cx-0.6, -1.35, cx+0.2, -0.55]);
+		segs.push([cx+0.2, -0.55, cx+1.2, -0.95]);
+	}
+	else if (accent == "cedilla")
+	{
+		segs.push([cx+0.1, 7.05, cx-0.35, 7.65]);
+		segs.push([cx-0.35, 7.65, cx+0.35, 8.15]);
+	}
+	return {w:w, s:segs};
+}
+
+latinStrokeFont["Á"] = accentedLatin("A", "acute");
+latinStrokeFont["À"] = accentedLatin("A", "grave");
+latinStrokeFont["Â"] = accentedLatin("A", "circumflex");
+latinStrokeFont["Ã"] = accentedLatin("A", "tilde");
+latinStrokeFont["É"] = accentedLatin("E", "acute");
+latinStrokeFont["È"] = accentedLatin("E", "grave");
+latinStrokeFont["Ê"] = accentedLatin("E", "circumflex");
+latinStrokeFont["Í"] = accentedLatin("I", "acute");
+latinStrokeFont["Ì"] = accentedLatin("I", "grave");
+latinStrokeFont["Î"] = accentedLatin("I", "circumflex");
+latinStrokeFont["Ó"] = accentedLatin("O", "acute");
+latinStrokeFont["Ò"] = accentedLatin("O", "grave");
+latinStrokeFont["Ô"] = accentedLatin("O", "circumflex");
+latinStrokeFont["Õ"] = accentedLatin("O", "tilde");
+latinStrokeFont["Ú"] = accentedLatin("U", "acute");
+latinStrokeFont["Ù"] = accentedLatin("U", "grave");
+latinStrokeFont["Û"] = accentedLatin("U", "circumflex");
+latinStrokeFont["Ç"] = accentedLatin("C", "cedilla");
+latinStrokeFont[";"] = {w:2,s:[[1,2,1,2.2],[1,5.5,0.4,6.9]]};
+latinStrokeFont["!"] = {w:2,s:[[1,0,1,5.2],[1,6.6,1,7]]};
+latinStrokeFont["("] = {w:3,s:[[2.5,0,1.2,1.2],[1.2,1.2,0.8,3.5],[0.8,3.5,1.2,5.8],[1.2,5.8,2.5,7]]};
+latinStrokeFont[")"] = {w:3,s:[[0.5,0,1.8,1.2],[1.8,1.2,2.2,3.5],[2.2,3.5,1.8,5.8],[1.8,5.8,0.5,7]]};
+latinStrokeFont["º"] = {w:3,s:[[0.8,0.2,2.2,0.2],[2.2,0.2,2.6,0.6],[2.6,0.6,2.6,1.8],[2.6,1.8,2.2,2.2],[2.2,2.2,0.8,2.2],[0.8,2.2,0.4,1.8],[0.4,1.8,0.4,0.6],[0.4,0.6,0.8,0.2]]};
+latinStrokeFont["ª"] = {w:3,s:[[0.5,2.2,1.1,1.2],[1.1,1.2,2.4,1.2],[2.4,1.2,2.4,2.2],[2.4,2.2,1.0,2.2],[1.0,2.2,0.5,1.8],[2.4,1.2,2.4,2.8]]};
 
 function latinCharData(ch)
 {
@@ -630,4 +685,3 @@ function main(params)
 	
 	return result;
 }
-
