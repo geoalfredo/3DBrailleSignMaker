@@ -579,11 +579,13 @@ function generate(text)
 
 	var brailleWidth = textWidth * parameters.form_distance;
 	var brailleHeight = numLines * parameters.line_height;
-	var plateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
+	var autoPlateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
+	var plateWidth = parameters.fixed_plate_size ? parameters.plate_width : autoPlateWidth;
 	var brailleStartX = parameters.plate_margin; // Braille também alinhado à esquerda
 	for (var tc=0; tc<theCharacters.length; tc++)
 		theCharacters[tc] = theCharacters[tc].translate([brailleStartX, 0, 0]);
-	var plateHeight = extraLatinHeight + brailleHeight + parameters.plate_margin * 2;
+	var autoPlateHeight = extraLatinHeight + brailleHeight + parameters.plate_margin * 2;
+	var plateHeight = parameters.fixed_plate_size ? parameters.plate_height : autoPlateHeight;
 
 	result = CSG.cube({
 		center: [plateWidth/2, -plateHeight/2, -parameters.plate_thickness/2],
@@ -651,6 +653,9 @@ function getParameterDefinitions()
 	
 		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 2.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
+		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
+		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 180.0 },
+		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
 	
 		{ name: 'reference_corner', caption: 'Gerar canto de referência ?', type: 'bool', initial: true },
 		{ name: 'stands', caption: 'Gerar apoios para impressão ?', type: 'bool', initial: true },
