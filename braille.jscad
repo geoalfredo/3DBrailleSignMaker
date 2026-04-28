@@ -6,6 +6,7 @@ var colorDot = [0.2, 0.2, 0.2];
 var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
+var colorLatin = [0.2, 0.2, 0.2];
 
 var characters =
 {
@@ -231,90 +232,196 @@ function characterByDots(dots)
 	return theCharacter;
 }
 
+
+function cleanLatinText(text)
+{
+	// O texto vetorial do OpenJSCAD antigo aceita apenas caracteres ASCII.
+	// Por isso, mantemos acentos no Braille, mas removemos acentos do texto latino em relevo.
+	var map = {
+		"á":"a","à":"a","ã":"a","â":"a","ä":"a","Á":"A","À":"A","Ã":"A","Â":"A","Ä":"A",
+		"é":"e","è":"e","ê":"e","ë":"e","É":"E","È":"E","Ê":"E","Ë":"E",
+		"í":"i","ì":"i","î":"i","ï":"i","Í":"I","Ì":"I","Î":"I","Ï":"I",
+		"ó":"o","ò":"o","õ":"o","ô":"o","ö":"o","Ó":"O","Ò":"O","Õ":"O","Ô":"O","Ö":"O",
+		"ú":"u","ù":"u","û":"u","ü":"u","Ú":"U","Ù":"U","Û":"U","Ü":"U",
+		"ç":"c","Ç":"C","ñ":"n","Ñ":"N"
+	};
+	var result = "";
+	for (var i=0; i<text.length; i++)
+	{
+		var ch = text.charAt(i);
+		result += (typeof map[ch] == "undefined") ? ch : map[ch];
+	}
+	return result.replace(/[^\x20-\x7E\n]/g, "?");
+}
+
+function scaledSegments(segments, scale)
+{
+	var out = [];
+	for (var i=0; i<segments.length; i++)
+	{
+		var path = [];
+		for (var j=0; j<segments[i].length; j++)
+		{
+			path.push([segments[i][j][0] * scale, segments[i][j][1] * scale]);
+		}
+		out.push(path);
+	}
+	return out;
+}
+
+function segmentsBounds(segments)
+{
+	var minX = 999999;
+	var minY = 999999;
+	var maxX = -999999;
+	var maxY = -999999;
+
+	for (var i=0; i<segments.length; i++)
+	{
+		for (var j=0; j<segments[i].length; j++)
+		{
+			var p = segments[i][j];
+			minX = Math.min(minX, p[0]);
+			minY = Math.min(minY, p[1]);
+			maxX = Math.max(maxX, p[0]);
+			maxY = Math.max(maxY, p[1]);
+		}
+	}
+
+	if (minX == 999999)
+		return [[0,0],[0,0]];
+
+	return [[minX, minY], [maxX, maxY]];
+}
+
+function latinTextObject(text, x, y)
+{
+	if (!parameters.latin_enabled)
+		return new CSG();
+
+	if (typeof vector_text == "undefined" || typeof rectangular_extrude == "undefined")
+		throw new Error("Esta versão do OpenJSCAD não encontrou vector_text/rectangular_extrude. Avise-me para fazermos a alternativa por SVG/importação.");
+
+	var cleanText = cleanLatinText(text);
+	var lines = cleanText.split("\n");
+	var result = new CSG();
+	var scale = parameters.latin_size / 21.0; // 21 é a altura padrão do texto vetorial do OpenJSCAD.
+	var lineHeight = parameters.latin_size * 1.45;
+
+	for (var i=0; i<lines.length; i++)
+	{
+		if (lines[i].length == 0)
+			continue;
+
+		var segments = scaledSegments(vector_text(0, 0, lines[i]), scale);
+		var bounds = segmentsBounds(segments);
+		var lineObj = rectangular_extrude(segments, { w: parameters.latin_stroke_width, h: parameters.latin_height });
+		lineObj = lineObj.translate([x - bounds[0][0], y - i*lineHeight - bounds[1][1], 0]);
+		lineObj = lineObj.setColor(colorDot[0], colorDot[1], colorDot[2]);
+		result = result.union(lineObj);
+	}
+
+	return result;
+}
+
+function latinTextDimensions(text)
+{
+	if (!parameters.latin_enabled)
+		return [0, 0];
+
+	var cleanText = cleanLatinText(text);
+	var lines = cleanText.split("\n");
+	var scale = parameters.latin_size / 21.0;
+	var lineHeight = parameters.latin_size * 1.45;
+	var width = 0;
+
+	for (var i=0; i<lines.length; i++)
+	{
+		if (lines[i].length == 0)
+			continue;
+		var segments = scaledSegments(vector_text(0, 0, lines[i]), scale);
+		var bounds = segmentsBounds(segments);
+		width = Math.max(width, bounds[1][0] - bounds[0][0]);
+	}
+
+	return [width, lines.length * lineHeight];
+}
+
 function generate(text)
 {
 	log("generating:\n" + text);
-	
+
+	var originalText = text; // usado para escrever o alfabeto latino em relevo
+
 	if (!parameters.upper)
 		text = text.toLowerCase();
-	
+
 	var result = new CSG();
 	if (text.length == 0)
 		return result;
-	
+
 	var find;
 	var replace;
-	
+
 	//we want uniform newlines for further processing!
-	find = /\n\r|\r\n|\r/;
+	find = /\n\r|\r\n|\r/g;
 	replace = "\n";
-	text.replace(find, replace);
-	
+	text = text.replace(find, replace);
+	originalText = originalText.replace(find, replace);
+
 	if (!parameters.straight)
 	{
-		//the regex unicode matching for uppercase letters (not supported in js):
-		// var find = /([\p{Lu}])/g;
-		// var replace = "$\L$1";
-		
-		//a WHOLE WORD in uppercase letters is prefaced by the character >
-		//TODO: make this combinable with single uppercase letters!
-		// find = /(\s|^)([A-ZÄÖÜ]+)(?=\s|$)/g;
-		// replace = "$1>$2";
-		// text = text.replace(find, replace).toLowerCase();
-		
 		//single uppercase letters are prefaced by the character $
 		find = /([A-ZÄÖÜ])/g;
 		replace = "$$$1";
 		text = text.replace(find, replace).toLowerCase();
-		
+
 		//numbers are prefaced by the character #
 		find = /([\d]+)/g;
 		replace = "#$1";
 		text = text.replace(find, replace);
-		
+
 		//is the number followed by a character between 'a' and 'j', a ' is inserted to avoid confusion
 		find = /([\d])(?=[a-j])/g;
 		replace = "$1'";
 		text = text.replace(find, replace);
-		
+
 		//replace quotes with opening and closing quotes
 		find = /"([^"]*)"/g;
 		replace = "»$1«";
-		// find = /(\s|^)"([^"]*)"(?=\s|$)/g;		//unsure about this
-		// replace = "$1»$2«";
 		text = text.replace(find, replace);
 	}
-	
+
 	//take care of contractions. they are marked by underlines (_xy_), thus _ needs to be escaped (__)
 	find = /(_)/g;
 	replace = "$1$1";
 	text = text.replace(find, replace);
-	
+
 	if (parameters.contractions)
 	{
 		find = /(st|au|eu|ei|sch|ch|äu|ie)/g;
 		replace = "_$1_";
 		text = text.replace(find, replace);
 	}
-	
+
 	log("converting to:\n" + text);
-	
-	
+
 	var numLines = 1;
 	var textWidth = 0;
 	var lineWidth = 0;
-	
 	var theCharacters = [];
-	
-	var offset = new CSG.Vector3D(parameters.plate_margin, -parameters.plate_margin, 0);
-	
+
+	var latinDims = latinTextDimensions(originalText);
+	var extraLatinHeight = parameters.latin_enabled ? (latinDims[1] + parameters.latin_gap) : 0;
+	var offset = new CSG.Vector3D(parameters.plate_margin, -parameters.plate_margin - extraLatinHeight, 0);
+
 	var isMultiCharForm = false;
 	var multiChars = "";
-	
+
 	for (var c=0; c < text.length; c++)
 	{
 		var newCharacter = text.charAt(c);
-		
+
 		var multiChar = newCharacter == '_';
 		if (isMultiCharForm)
 		{
@@ -342,46 +449,59 @@ function generate(text)
 			log("\n");
 			continue;
 		}
-		
+
 		lineWidth++;
-		
+
 		var charCode = characters[newCharacter];
-		
+
 		if (typeof charCode == "undefined")
 		{
 			charCode = characters["?"];
 			throw new Error("Unsupported character '" + newCharacter + "'");
 		}
-		
+
 		if (charCode > 0)
 			textWidth = Math.max(textWidth, lineWidth);
-		
+
 		var characterDots = characterByCode(charCode);
 		var position = offset.plus(new CSG.Vector3D(parameters.form_distance * (lineWidth-1), parameters.line_height * -(numLines-1), 0));
 		for (var cp=0; cp < characterDots.length; cp++)
 			characterDots[cp] = characterDots[cp].translate([position.x, position.y, position.z]);
-		
+
 		theCharacters = theCharacters.concat(characterDots);
-		
+
 		log(newCharacter);
 	}
-	
-	var marginFactor = [(parameters.plate_margin*2)/parameters.form_distance, (parameters.plate_margin*2)/parameters.line_height];
-	result = form_base().scale([textWidth + marginFactor[0], numLines + marginFactor[1], 1]);
+
+	var brailleWidth = textWidth * parameters.form_distance;
+	var brailleHeight = numLines * parameters.line_height;
+	var plateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
+	var plateHeight = extraLatinHeight + brailleHeight + parameters.plate_margin * 2;
+
+	result = CSG.cube({
+		center: [plateWidth/2, -plateHeight/2, -parameters.plate_thickness/2],
+		radius: [plateWidth/2, plateHeight/2, parameters.plate_thickness/2]
+	});
 	result = result.setColor(colorPlate[0], colorPlate[1], colorPlate[2]);
-	
+
+	if (parameters.latin_enabled)
+	{
+		var latin = latinTextObject(originalText, parameters.plate_margin, -parameters.plate_margin);
+		result = result.union(latin);
+	}
+
 	result = result.union(theCharacters);
-	
+
 	if (parameters.reference_corner && parameters.plate_margin > 0)
 	{
 		var cornerCut = CSG.cube({ center: [0, 0, 0], radius: [parameters.plate_margin, parameters.plate_margin/2, parameters.plate_thickness] }).rotateZ(45);
 		cornerCut = cornerCut.setColor(colorInside[0], colorInside[1], colorInside[2]);
 		result = result.subtract(cornerCut);
 	}
-	
-	var dimensions = [textWidth*parameters.form_distance+parameters.plate_margin*2, numLines*parameters.line_height+parameters.plate_margin*2];
+
+	var dimensions = [plateWidth, plateHeight];
 	result = result.translate([-dimensions[0]/2, dimensions[1], 0]).rotateX(90);
-	
+
 	if (parameters.stands)
 	{
 		var standDiameter = 10.0;
@@ -392,13 +512,12 @@ function generate(text)
 		stand = stand.union(standCircle.translate([bounds[0].x - standDiameter/2, parameters.plate_thickness/2, 0]));
 		stand = stand.union(standCircle.translate([bounds[1].x + standDiameter/2, parameters.plate_thickness/2, 0]));
 		stand = stand.setColor(colorSupport[0], colorSupport[1], colorSupport[2]);
-		
+
 		result = result.union(stand);
 	}
-	
+
 	return result;
 }
-
 
 
 function getParameterDefinitions()
@@ -407,6 +526,11 @@ function getParameterDefinitions()
 	
 	var parameterDefinitions = [
 		{ name: 'text', caption: 'Texto', type: 'longtext', initial: 'Olá Mundo' },
+		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
+		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
+		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
+		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 0.8 },
+		{ name: 'latin_gap', caption: 'Espaço entre texto latino e Braille (mm):', type: 'float', initial: 3.0 },
 		{ name: 'upper', caption: 'Maiúsculo', type: 'bool', initial: false },
 		{ name: 'contractions', caption: 'Contrações', type: 'bool', initial: false, visible: false },
 		{ name: 'straight', caption: 'Conversão direta', type: 'bool', initial: false, visible: false },
