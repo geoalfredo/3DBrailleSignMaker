@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.1 esquerda: texto latino por traços, alinhado à esquerda, e Braille abaixo.
+// Versão 2.3 NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC opcional.
 
 var characters =
 {
@@ -451,6 +451,88 @@ function latinTextDimensions(text)
 	return [width, lines.length * lineHeight];
 }
 
+// Símbolo NFC em geometria nativa JSCAD, inspirado na imagem de referência.
+// Evita importar STL externo, mantendo o arquivo leve e compatível com o OpenJSCAD antigo do app.
+function raisedStrokeSegment(x1, y1, x2, y2, zHeight, strokeWidth, resolution)
+{
+	var dx = x2 - x1;
+	var dy = y2 - y1;
+	var length = Math.sqrt(dx*dx + dy*dy);
+	if (length < 0.001)
+		length = strokeWidth;
+	var angle = Math.atan2(dy, dx) * 180.0 / Math.PI;
+	var obj = CSG.cube({ center: [0, 0, zHeight/2], radius: [length/2, strokeWidth/2, zHeight/2] });
+	obj = obj.rotateZ(angle).translate([(x1+x2)/2, (y1+y2)/2, 0]);
+	var cap1 = CSG.cylinder({ start: [x1, y1, 0], end: [x1, y1, zHeight], radius: strokeWidth/2, resolution: resolution });
+	var cap2 = CSG.cylinder({ start: [x2, y2, 0], end: [x2, y2, zHeight], radius: strokeWidth/2, resolution: resolution });
+	return obj.union(cap1).union(cap2).setColor(colorDot[0], colorDot[1], colorDot[2]);
+}
+
+function nfcArc(result, x0, yTop, scale, cx, cy, radius, startDeg, endDeg, strokeWidth, zHeight)
+{
+	var steps = 16;
+	var lastX = null;
+	var lastY = null;
+	for (var i=0; i<=steps; i++)
+	{
+		var a = (startDeg + (endDeg-startDeg) * i/steps) * Math.PI / 180.0;
+		var x = x0 + (cx + radius * Math.cos(a)) * scale;
+		var y = yTop - (cy + radius * Math.sin(a)) * scale;
+		if (lastX != null)
+			result = result.union(raisedStrokeSegment(lastX, lastY, x, y, zHeight, strokeWidth, parameters.resolution));
+		lastX = x;
+		lastY = y;
+	}
+	return result;
+}
+
+function nfcLettersObject(x0, yTop, scale, zHeight, strokeWidth)
+{
+	var result = new CSG();
+	var text = "NFC";
+	var localScale = scale * 8.0;
+	var spacing = localScale * 1.0;
+	var x = x0 + 23 * scale;
+	var baselineTop = yTop - 66 * scale;
+	for (var i=0; i<text.length; i++)
+	{
+		var data = latinCharData(text.charAt(i));
+		for (var s=0; s<data.s.length; s++)
+		{
+			var seg = data.s[s];
+			var sx1 = x + seg[0] * localScale;
+			var sy1 = baselineTop - seg[1] * localScale;
+			var sx2 = x + seg[2] * localScale;
+			var sy2 = baselineTop - seg[3] * localScale;
+			result = result.union(raisedStrokeSegment(sx1, sy1, sx2, sy2, zHeight, strokeWidth, parameters.resolution));
+		}
+		x += data.w * localScale + spacing;
+	}
+	return result;
+}
+
+function nfcIconObject(plateWidth, plateHeight)
+{
+	if (!parameters.nfc_enabled)
+		return new CSG();
+
+	var size = parameters.nfc_size;
+	var x0 = plateWidth - parameters.nfc_margin_right - size;
+	var yTop = -plateHeight + parameters.nfc_margin_bottom + size;
+	var scale = size / 100.0;
+	var zHeight = parameters.nfc_height;
+	var strokeWidth = parameters.nfc_stroke_width;
+
+	var result = new CSG();
+	// Três arcos superiores do símbolo NFC.
+	result = nfcArc(result, x0, yTop, scale, 50, 50, 45, 205, 335, strokeWidth, zHeight);
+	result = nfcArc(result, x0, yTop, scale, 50, 55, 31, 205, 335, strokeWidth, zHeight);
+	result = nfcArc(result, x0, yTop, scale, 50, 60, 19, 205, 335, strokeWidth, zHeight);
+	// Texto NFC abaixo dos arcos.
+	result = result.union(nfcLettersObject(x0, yTop, scale, zHeight, strokeWidth));
+	return result.setColor(colorDot[0], colorDot[1], colorDot[2]);
+}
+
 function generate(text)
 {
 	log("generating:\n" + text);
@@ -601,6 +683,8 @@ function generate(text)
 
 	result = result.union(theCharacters);
 
+	result = result.union(nfcIconObject(plateWidth, plateHeight));
+
 	if (parameters.reference_corner && parameters.plate_margin > 0)
 	{
 		var cornerCut = CSG.cube({ center: [0, 0, 0], radius: [parameters.plate_margin, parameters.plate_margin/2, parameters.plate_thickness] }).rotateZ(45);
@@ -656,6 +740,13 @@ function getParameterDefinitions()
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 180.0 },
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
+
+		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
+		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 22.0 },
+		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
+		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
+		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
+		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
 	
 		{ name: 'reference_corner', caption: 'Gerar canto de referência ?', type: 'bool', initial: true },
 		{ name: 'stands', caption: 'Gerar apoios para impressão ?', type: 'bool', initial: true },
