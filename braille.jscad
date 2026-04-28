@@ -254,44 +254,70 @@ function cleanLatinText(text)
 	return result.replace(/[^\x20-\x7E\n]/g, "?");
 }
 
-function scaledSegments(segments, scale)
+
+// Fonte simples 5x7 em blocos. Não depende de vector_text.
+// É menos elegante que uma fonte vetorial, mas funciona na versão antiga do OpenJSCAD usada pelo app.
+var latinPixelFont = {
+	"A":["01110","10001","10001","11111","10001","10001","10001"],
+	"B":["11110","10001","10001","11110","10001","10001","11110"],
+	"C":["01111","10000","10000","10000","10000","10000","01111"],
+	"D":["11110","10001","10001","10001","10001","10001","11110"],
+	"E":["11111","10000","10000","11110","10000","10000","11111"],
+	"F":["11111","10000","10000","11110","10000","10000","10000"],
+	"G":["01111","10000","10000","10111","10001","10001","01111"],
+	"H":["10001","10001","10001","11111","10001","10001","10001"],
+	"I":["11111","00100","00100","00100","00100","00100","11111"],
+	"J":["00111","00010","00010","00010","00010","10010","01100"],
+	"K":["10001","10010","10100","11000","10100","10010","10001"],
+	"L":["10000","10000","10000","10000","10000","10000","11111"],
+	"M":["10001","11011","10101","10101","10001","10001","10001"],
+	"N":["10001","11001","10101","10011","10001","10001","10001"],
+	"O":["01110","10001","10001","10001","10001","10001","01110"],
+	"P":["11110","10001","10001","11110","10000","10000","10000"],
+	"Q":["01110","10001","10001","10001","10101","10010","01101"],
+	"R":["11110","10001","10001","11110","10100","10010","10001"],
+	"S":["01111","10000","10000","01110","00001","00001","11110"],
+	"T":["11111","00100","00100","00100","00100","00100","00100"],
+	"U":["10001","10001","10001","10001","10001","10001","01110"],
+	"V":["10001","10001","10001","10001","10001","01010","00100"],
+	"W":["10001","10001","10001","10101","10101","10101","01010"],
+	"X":["10001","10001","01010","00100","01010","10001","10001"],
+	"Y":["10001","10001","01010","00100","00100","00100","00100"],
+	"Z":["11111","00001","00010","00100","01000","10000","11111"],
+	"0":["01110","10001","10011","10101","11001","10001","01110"],
+	"1":["00100","01100","00100","00100","00100","00100","01110"],
+	"2":["01110","10001","00001","00010","00100","01000","11111"],
+	"3":["11110","00001","00001","01110","00001","00001","11110"],
+	"4":["00010","00110","01010","10010","11111","00010","00010"],
+	"5":["11111","10000","10000","11110","00001","00001","11110"],
+	"6":["01110","10000","10000","11110","10001","10001","01110"],
+	"7":["11111","00001","00010","00100","01000","01000","01000"],
+	"8":["01110","10001","10001","01110","10001","10001","01110"],
+	"9":["01110","10001","10001","01111","00001","00001","01110"],
+	"-":["00000","00000","00000","11111","00000","00000","00000"],
+	".":["00000","00000","00000","00000","00000","01100","01100"],
+	",":["00000","00000","00000","00000","01100","01100","01000"],
+	":":["00000","01100","01100","00000","01100","01100","00000"],
+	"/":["00001","00010","00010","00100","01000","01000","10000"],
+	"?":["01110","10001","00001","00010","00100","00000","00100"],
+	" ":["00000","00000","00000","00000","00000","00000","00000"]
+};
+
+function latinCharPattern(ch)
 {
-	var out = [];
-	for (var i=0; i<segments.length; i++)
-	{
-		var path = [];
-		for (var j=0; j<segments[i].length; j++)
-		{
-			path.push([segments[i][j][0] * scale, segments[i][j][1] * scale]);
-		}
-		out.push(path);
-	}
-	return out;
+	ch = ch.toUpperCase();
+	if (typeof latinPixelFont[ch] != "undefined")
+		return latinPixelFont[ch];
+	return latinPixelFont["?"];
 }
 
-function segmentsBounds(segments)
+function latinLineWidth(line)
 {
-	var minX = 999999;
-	var minY = 999999;
-	var maxX = -999999;
-	var maxY = -999999;
-
-	for (var i=0; i<segments.length; i++)
-	{
-		for (var j=0; j<segments[i].length; j++)
-		{
-			var p = segments[i][j];
-			minX = Math.min(minX, p[0]);
-			minY = Math.min(minY, p[1]);
-			maxX = Math.max(maxX, p[0]);
-			maxY = Math.max(maxY, p[1]);
-		}
-	}
-
-	if (minX == 999999)
-		return [[0,0],[0,0]];
-
-	return [[minX, minY], [maxX, maxY]];
+	var cell = parameters.latin_size / 7.0;
+	var charAdvance = cell * 6.0;
+	if (line.length == 0)
+		return 0;
+	return line.length * charAdvance - cell;
 }
 
 function latinTextObject(text, x, y)
@@ -299,26 +325,34 @@ function latinTextObject(text, x, y)
 	if (!parameters.latin_enabled)
 		return new CSG();
 
-	if (typeof vector_text == "undefined" || typeof rectangular_extrude == "undefined")
-		throw new Error("Esta versão do OpenJSCAD não encontrou vector_text/rectangular_extrude. Avise-me para fazermos a alternativa por SVG/importação.");
-
 	var cleanText = cleanLatinText(text);
 	var lines = cleanText.split("\n");
 	var result = new CSG();
-	var scale = parameters.latin_size / 21.0; // 21 é a altura padrão do texto vetorial do OpenJSCAD.
+	var cell = parameters.latin_size / 7.0;
+	var block = Math.max(0.15, cell * 0.82);
 	var lineHeight = parameters.latin_size * 1.45;
+	var zHeight = parameters.latin_height;
 
 	for (var i=0; i<lines.length; i++)
 	{
-		if (lines[i].length == 0)
-			continue;
-
-		var segments = scaledSegments(vector_text(0, 0, lines[i]), scale);
-		var bounds = segmentsBounds(segments);
-		var lineObj = rectangular_extrude(segments, { w: parameters.latin_stroke_width, h: parameters.latin_height });
-		lineObj = lineObj.translate([x - bounds[0][0], y - i*lineHeight - bounds[1][1], 0]);
-		lineObj = lineObj.setColor(colorDot[0], colorDot[1], colorDot[2]);
-		result = result.union(lineObj);
+		var line = lines[i];
+		for (var c=0; c<line.length; c++)
+		{
+			var pattern = latinCharPattern(line.charAt(c));
+			for (var row=0; row<7; row++)
+			{
+				for (var col=0; col<5; col++)
+				{
+					if (pattern[row].charAt(col) != "1")
+						continue;
+					var cx = x + c * cell * 6.0 + col * cell + cell/2;
+					var cy = y - i * lineHeight - row * cell - cell/2;
+					var cube = CSG.cube({ center: [cx, cy, zHeight/2], radius: [block/2, block/2, zHeight/2] });
+					cube = cube.setColor(colorDot[0], colorDot[1], colorDot[2]);
+					result = result.union(cube);
+				}
+			}
+		}
 	}
 
 	return result;
@@ -331,18 +365,11 @@ function latinTextDimensions(text)
 
 	var cleanText = cleanLatinText(text);
 	var lines = cleanText.split("\n");
-	var scale = parameters.latin_size / 21.0;
 	var lineHeight = parameters.latin_size * 1.45;
 	var width = 0;
 
 	for (var i=0; i<lines.length; i++)
-	{
-		if (lines[i].length == 0)
-			continue;
-		var segments = scaledSegments(vector_text(0, 0, lines[i]), scale);
-		var bounds = segmentsBounds(segments);
-		width = Math.max(width, bounds[1][0] - bounds[0][0]);
-	}
+		width = Math.max(width, latinLineWidth(lines[i]));
 
 	return [width, lines.length * lineHeight];
 }
