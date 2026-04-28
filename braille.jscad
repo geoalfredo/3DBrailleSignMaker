@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.3 NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC opcional.
+// Versão 2.3b NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC opcional.
 
 var characters =
 {
@@ -490,10 +490,12 @@ function nfcLettersObject(x0, yTop, scale, zHeight, strokeWidth)
 {
 	var result = new CSG();
 	var text = "NFC";
-	var localScale = scale * 8.0;
-	var spacing = localScale * 1.0;
-	var x = x0 + 23 * scale;
-	var baselineTop = yTop - 66 * scale;
+	var textScaleFactor = parameters.nfc_text_size;
+	var localScale = scale * textScaleFactor;
+	var spacing = localScale * 0.75;
+	var totalTextWidth = (3.0 + 0.75 + 2.6 + 0.75 + 2.5) * localScale;
+	var x = x0 + (50 * scale) - totalTextWidth/2;
+	var baselineTop = yTop - 69 * scale;
 	for (var i=0; i<text.length; i++)
 	{
 		var data = latinCharData(text.charAt(i));
@@ -747,6 +749,7 @@ function getParameterDefinitions()
 		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
 		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
+		{ name: 'nfc_text_size', caption: 'Tamanho da fonte do texto NFC:', type: 'float', initial: 5.2 },
 	
 		{ name: 'reference_corner', caption: 'Gerar canto de referência ?', type: 'bool', initial: true },
 		{ name: 'stands', caption: 'Gerar apoios para impressão ?', type: 'bool', initial: true },
