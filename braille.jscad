@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.3b NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC opcional.
+// Versão 2.3c NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC com texto centralizado.
 
 var characters =
 {
@@ -493,8 +493,20 @@ function nfcLettersObject(x0, yTop, scale, zHeight, strokeWidth)
 	var textScaleFactor = parameters.nfc_text_size;
 	var localScale = scale * textScaleFactor;
 	var spacing = localScale * 0.75;
-	var totalTextWidth = (3.0 + 0.75 + 2.6 + 0.75 + 2.5) * localScale;
-	var x = x0 + (50 * scale) - totalTextWidth/2;
+
+	// Calcula a largura real das letras, em vez de usar valor fixo.
+	// Isso mantém o texto NFC centralizado em relação aos arcos do símbolo.
+	var totalTextWidth = 0;
+	for (var m=0; m<text.length; m++)
+	{
+		var measureData = latinCharData(text.charAt(m));
+		totalTextWidth += measureData.w * localScale;
+		if (m < text.length - 1)
+			totalTextWidth += spacing;
+	}
+
+	var centerX = x0 + (50 * scale);
+	var x = centerX - totalTextWidth/2;
 	var baselineTop = yTop - 69 * scale;
 	for (var i=0; i<text.length; i++)
 	{
