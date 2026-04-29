@@ -731,15 +731,14 @@ function getParameterDefinitions()
 {
 	var debug = false;
 
-	// Menu organizado em blocos para facilitar o uso.
-	// Esta versão antiga do OpenJSCAD não possui caixas/fieldsets reais no painel.
-	// Por isso, os blocos são indicados diretamente nos rótulos dos campos.
+	// Menu organizado em blocos. Os títulos usam HTML porque esta versão do OpenJSCAD
+	// renderiza os rótulos com innerHTML no painel de parâmetros.
 	var parameterDefinitions = [
-		// BLOCO 1 - TEXTO PRINCIPAL
-		{ name: 'text', caption: 'BLOCO 1 - TEXTO PRINCIPAL\nTexto da placa:', type: 'longtext', initial: 'Olá Mundo' },
+		// 1 - TEXTO PRINCIPAL
+		{ name: 'text', caption: '<b>1 - Texto principal</b><br>Texto da placa:', type: 'longtext', initial: 'Olá Mundo' },
 
-		// BLOCO 2 - ALFABETO LATINO
-		{ name: 'latin_enabled', caption: 'BLOCO 2 - ALFABETO LATINO\nGerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
+		// 2 - ALFABETO LATINO
+		{ name: 'latin_enabled', caption: '<br><br><b>2 - Alfabeto latino</b><br>Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
 		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
 		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
 		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 0.45 },
@@ -748,21 +747,21 @@ function getParameterDefinitions()
 		{ name: 'contractions', caption: 'Contrações', type: 'bool', initial: false, visible: false },
 		{ name: 'straight', caption: 'Conversão direta', type: 'bool', initial: false, visible: false },
 
-		// BLOCO 3 - ALFABETO BRAILLE
-		{ name: 'dot_height', caption: 'BLOCO 3 - ALFABETO BRAILLE\nAltura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
+		// 3 - ALFABETO BRAILLE
+		{ name: 'dot_height', caption: '<br><br><b>3 - Alfabeto Braille</b><br>Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
 		{ name: 'dot_diameter', caption: 'Diâmetro do ponto [default: 1.9mm]:', type: 'range', initial: 1.9, begin: 1.2, end: 2.0, step: 0.01 },
 		{ name: 'form_size', caption: 'Tamanho do formulário [0mm - 10mm]', type: 'float', initial: 5.0, visible: false },
 		{ name: 'dot_distance', caption: 'Distância entre pontos [default: 2.7mm]:', type: 'float', initial: 2.7, begin: 1.6, end: 2.7, step: 0.01, visible: false },
 
-		// BLOCO 4 - TAMANHO DA PLACA
-		{ name: 'plate_thickness', caption: 'BLOCO 4 - TAMANHO DA PLACA\nEspessura da placa (mm):', type: 'float', initial: 3.0 },
+		// 4 - TAMANHO DA PLACA
+		{ name: 'plate_thickness', caption: '<br><br><b>4 - Tamanho da placa</b><br>Espessura da placa (mm):', type: 'float', initial: 3.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 180.0 },
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
 
-		// BLOCO 5 - SÍMBOLO NFC
-		{ name: 'nfc_enabled', caption: 'BLOCO 5 - SÍMBOLO NFC\nInserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
+		// 5 - SÍMBOLO NFC
+		{ name: 'nfc_enabled', caption: '<br><br><b>5 - Símbolo NFC</b><br>Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
 		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 22.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
@@ -770,9 +769,10 @@ function getParameterDefinitions()
 		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
 		{ name: 'nfc_text_size', caption: 'Tamanho da fonte do texto NFC:', type: 'float', initial: 5.2 },
 
-		// BLOCO 6 - IMPRESSÃO 3D
-		{ name: 'reference_corner', caption: 'BLOCO 6 - IMPRESSÃO 3D\nGerar canto de referência?', type: 'bool', initial: true },
+		// 6 - IMPRESSÃO 3D
+		{ name: 'reference_corner', caption: '<br><br><b>6 - Impressão 3D</b><br>Gerar canto de referência?', type: 'bool', initial: true },
 		{ name: 'stands', caption: 'Gerar apoios para impressão?', type: 'bool', initial: true },
+
 		{ name: 'resolution', caption: 'Resolução', type: 'int', initial: 16, visible: false },
 		{ name: 'dot_shape', caption: 'Formato do ponto', type: 'choice', values: ['sphere', 'cylinder', 'smooth'], captions: ['Esfera', 'Cilindro', 'Plano'], initial: 'smooth', visible: false }
 	];
