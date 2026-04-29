@@ -749,7 +749,7 @@ function getParameterDefinitions()
 	  	{ name: 'dot_height', caption: 'Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75,  begin: 0.6, end: 0.8, step: 0.01},
 		{ name: 'dot_diameter', caption: 'Diâmetro do ponto [default: 1.9mm]:', type: 'range', initial: 1.9, begin: 1.2, end: 2.0, step: 0.01 },
 	
-		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 2.0 },
+		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 3.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 180.0 },
