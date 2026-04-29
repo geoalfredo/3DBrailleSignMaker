@@ -731,14 +731,29 @@ function getParameterDefinitions()
 {
 	var debug = false;
 
-	// Menu organizado em blocos. Os títulos usam HTML porque esta versão do OpenJSCAD
-	// renderiza os rótulos com innerHTML no painel de parâmetros.
-	var parameterDefinitions = [
-		// 1 - TEXTO PRINCIPAL
-		{ name: 'text', caption: '<b>1 - Texto principal</b><br>Texto da placa:', type: 'longtext', initial: 'Olá Mundo' },
+	// Menu organizado em blocos. Mantém a geometria da versão estável.
+	// Os estilos abaixo corrigem o alinhamento dos campos no painel antigo do OpenJSCAD.
+	var uiStyle = '<style>' +
+		'.parameterstable td{vertical-align:top;padding:2px 6px;}' +
+		'.parameterstable td:first-child{min-width:220px;}' +
+		'.parameterstable input[type="text"]{width:170px;}' +
+		'.parameterstable textarea{width:330px;height:95px;}' +
+		'.parameterstable tr:nth-child(2) td,' +
+		'.parameterstable tr:nth-child(10) td,' +
+		'.parameterstable tr:nth-child(14) td,' +
+		'.parameterstable tr:nth-child(20) td,' +
+		'.parameterstable tr:nth-child(27) td{padding-top:24px;}' +
+		'.parameterstable tr:nth-child(2) td:nth-child(2),' +
+		'.parameterstable tr:nth-child(10) td:nth-child(2),' +
+		'.parameterstable tr:nth-child(14) td:nth-child(2),' +
+		'.parameterstable tr:nth-child(20) td:nth-child(2),' +
+		'.parameterstable tr:nth-child(27) td:nth-child(2){padding-top:42px;}' +
+		'.menuBlockTitle{font-weight:bold;display:block;margin-bottom:6px;}' +
+		'</style>';
 
-		// 2 - ALFABETO LATINO
-		{ name: 'latin_enabled', caption: '<br><br><b>2 - Alfabeto latino</b><br>Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
+	var parameterDefinitions = [
+		{ name: 'text', caption: uiStyle + '<span class="menuBlockTitle">1 - Texto principal</span>Texto da placa:', type: 'longtext', initial: 'Olá Mundo' },
+		{ name: 'latin_enabled', caption: '<span class="menuBlockTitle">2 - Alfabeto latino</span>Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
 		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
 		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
 		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 0.45 },
@@ -746,39 +761,31 @@ function getParameterDefinitions()
 		{ name: 'upper', caption: 'Maiúsculo:', type: 'bool', initial: false },
 		{ name: 'contractions', caption: 'Contrações', type: 'bool', initial: false, visible: false },
 		{ name: 'straight', caption: 'Conversão direta', type: 'bool', initial: false, visible: false },
-
-		// 3 - ALFABETO BRAILLE
-		{ name: 'dot_height', caption: '<br><br><b>3 - Alfabeto Braille</b><br>Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
+		{ name: 'dot_height', caption: '<span class="menuBlockTitle">3 - Alfabeto Braille</span>Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
 		{ name: 'dot_diameter', caption: 'Diâmetro do ponto [default: 1.9mm]:', type: 'range', initial: 1.9, begin: 1.2, end: 2.0, step: 0.01 },
 		{ name: 'form_size', caption: 'Tamanho do formulário [0mm - 10mm]', type: 'float', initial: 5.0, visible: false },
 		{ name: 'dot_distance', caption: 'Distância entre pontos [default: 2.7mm]:', type: 'float', initial: 2.7, begin: 1.6, end: 2.7, step: 0.01, visible: false },
-
-		// 4 - TAMANHO DA PLACA
-		{ name: 'plate_thickness', caption: '<br><br><b>4 - Tamanho da placa</b><br>Espessura da placa (mm):', type: 'float', initial: 3.0 },
+		{ name: 'plate_thickness', caption: '<span class="menuBlockTitle">4 - Tamanho da placa</span>Espessura da placa (mm):', type: 'float', initial: 3.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 180.0 },
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
-
-		// 5 - SÍMBOLO NFC
-		{ name: 'nfc_enabled', caption: '<br><br><b>5 - Símbolo NFC</b><br>Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
+		{ name: 'nfc_enabled', caption: '<span class="menuBlockTitle">5 - Símbolo NFC</span>Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
 		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 22.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
 		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
 		{ name: 'nfc_text_size', caption: 'Tamanho da fonte do texto NFC:', type: 'float', initial: 5.2 },
-
-		// 6 - IMPRESSÃO 3D
-		{ name: 'reference_corner', caption: '<br><br><b>6 - Impressão 3D</b><br>Gerar canto de referência?', type: 'bool', initial: true },
+		{ name: 'reference_corner', caption: '<span class="menuBlockTitle">6 - Impressão 3D</span>Gerar canto de referência?', type: 'bool', initial: true },
 		{ name: 'stands', caption: 'Gerar apoios para impressão?', type: 'bool', initial: true },
-
 		{ name: 'resolution', caption: 'Resolução', type: 'int', initial: 16, visible: false },
 		{ name: 'dot_shape', caption: 'Formato do ponto', type: 'choice', values: ['sphere', 'cylinder', 'smooth'], captions: ['Esfera', 'Cilindro', 'Plano'], initial: 'smooth', visible: false }
 	];
 
 	return parameterDefinitions;
 }
+
 function main(params)
 {
 	log("start");
