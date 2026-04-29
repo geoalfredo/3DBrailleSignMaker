@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.3c NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC com texto centralizado.
+// 3DBrailleSignMaker - Versão ABNT 1.0: presets de placa, texto latino, Braille, NFC e seta direcional.
 
 var characters =
 {
@@ -419,6 +419,8 @@ function latinTextObject(text, plateWidth, y)
 	{
 		var line = lines[i];
 		var x = parameters.plate_margin; // alinhado à esquerda
+		if (parameters.plate_type == 'direcional')
+			x += parameters.arrow_size + parameters.arrow_text_gap;
 		var yTop = y - i * lineHeight;
 		for (var c=0; c<line.length; c++)
 		{
@@ -546,6 +548,112 @@ function nfcIconObject(plateWidth, plateHeight)
 	result = result.union(nfcLettersObject(x0, yTop, scale, zHeight, strokeWidth));
 	return result.setColor(colorDot[0], colorDot[1], colorDot[2]);
 }
+
+function directionalArrowObject(plateWidth, plateHeight)
+{
+	if (parameters.plate_type != 'direcional')
+		return new CSG();
+
+	var size = parameters.arrow_size;
+	var stroke = parameters.arrow_stroke_width;
+	var zHeight = parameters.latin_height;
+	var marginLeft = parameters.plate_margin;
+	var centerY = -parameters.plate_margin - size/2;
+	var centerX = marginLeft + size/2;
+	var result = new CSG();
+
+	function seg(x1, y1, x2, y2)
+	{
+		var dx = x2-x1;
+		var dy = y2-y1;
+		var length = Math.sqrt(dx*dx + dy*dy);
+		if (length <= 0) length = stroke;
+		var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+		var obj = CSG.cube({ center: [length/2, 0, zHeight/2], radius: [length/2, stroke/2, zHeight/2] });
+		obj = obj.rotateZ(angle).translate([x1, y1, 0]);
+		return obj.setColor(colorLatin[0], colorLatin[1], colorLatin[2]);
+	}
+
+	var len = size * 0.72;
+	var head = size * 0.28;
+	var dir = parameters.arrow_direction;
+
+	if (dir == 'right')
+	{
+		var x1 = centerX - len/2; var x2 = centerX + len/2;
+		result = result.union(seg(x1, centerY, x2, centerY));
+		result = result.union(seg(x2, centerY, x2-head, centerY-head));
+		result = result.union(seg(x2, centerY, x2-head, centerY+head));
+	}
+	else if (dir == 'left')
+	{
+		var x1 = centerX + len/2; var x2 = centerX - len/2;
+		result = result.union(seg(x1, centerY, x2, centerY));
+		result = result.union(seg(x2, centerY, x2+head, centerY-head));
+		result = result.union(seg(x2, centerY, x2+head, centerY+head));
+	}
+	else if (dir == 'up')
+	{
+		var y1 = centerY + len/2; var y2 = centerY - len/2;
+		result = result.union(seg(centerX, y1, centerX, y2));
+		result = result.union(seg(centerX, y2, centerX-head, y2+head));
+		result = result.union(seg(centerX, y2, centerX+head, y2+head));
+	}
+	else if (dir == 'down')
+	{
+		var y1 = centerY - len/2; var y2 = centerY + len/2;
+		result = result.union(seg(centerX, y1, centerX, y2));
+		result = result.union(seg(centerX, y2, centerX-head, y2-head));
+		result = result.union(seg(centerX, y2, centerX+head, y2-head));
+	}
+
+	return result;
+}
+
+function applyPlatePreset()
+{
+	if (!parameters.abnt_preset_enabled)
+		return;
+
+	if (parameters.plate_type == 'sala_porta')
+	{
+		parameters.fixed_plate_size = true;
+		parameters.plate_width = 180;
+		parameters.plate_height = 90;
+		parameters.latin_size = 7.0;
+		parameters.plate_margin = Math.max(parameters.plate_margin, 8);
+		parameters.latin_gap = Math.max(parameters.latin_gap, 5);
+	}
+	else if (parameters.plate_type == 'setor')
+	{
+		parameters.fixed_plate_size = true;
+		parameters.plate_width = 220;
+		parameters.plate_height = 110;
+		parameters.latin_size = 9.0;
+		parameters.plate_margin = Math.max(parameters.plate_margin, 10);
+		parameters.latin_gap = Math.max(parameters.latin_gap, 6);
+	}
+	else if (parameters.plate_type == 'corredor')
+	{
+		parameters.fixed_plate_size = true;
+		parameters.plate_width = 260;
+		parameters.plate_height = 120;
+		parameters.latin_size = 12.0;
+		parameters.plate_margin = Math.max(parameters.plate_margin, 12);
+		parameters.latin_gap = Math.max(parameters.latin_gap, 8);
+	}
+	else if (parameters.plate_type == 'direcional')
+	{
+		parameters.fixed_plate_size = true;
+		parameters.plate_width = 220;
+		parameters.plate_height = 90;
+		parameters.latin_size = 8.0;
+		parameters.plate_margin = Math.max(parameters.plate_margin, 8);
+		parameters.latin_gap = Math.max(parameters.latin_gap, 5);
+	}
+	// personalizada: mantém os valores definidos pelo usuário
+}
+
 
 function generate(text)
 {
@@ -678,6 +786,8 @@ function generate(text)
 	var autoPlateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
 	var plateWidth = parameters.fixed_plate_size ? parameters.plate_width : autoPlateWidth;
 	var brailleStartX = parameters.plate_margin; // Braille também alinhado à esquerda
+	if (parameters.plate_type == 'direcional')
+		brailleStartX += parameters.arrow_size + parameters.arrow_text_gap;
 	for (var tc=0; tc<theCharacters.length; tc++)
 		theCharacters[tc] = theCharacters[tc].translate([brailleStartX, 0, 0]);
 	var autoPlateHeight = extraLatinHeight + brailleHeight + parameters.plate_margin * 2;
@@ -694,6 +804,8 @@ function generate(text)
 		var latin = latinTextObject(originalText, plateWidth, -parameters.plate_margin);
 		result = result.union(latin);
 	}
+
+	result = result.union(directionalArrowObject(plateWidth, plateHeight));
 
 	result = result.union(theCharacters);
 
@@ -733,6 +845,12 @@ function getParameterDefinitions()
 	
 	var parameterDefinitions = [
 		{ name: 'text', caption: 'Texto', type: 'longtext', initial: 'Olá Mundo' },
+		{ name: 'abnt_preset_enabled', caption: 'Usar presets ABNT NBR 9050?', type: 'bool', initial: true },
+		{ name: 'plate_type', caption: 'Tipo de placa:', type: 'choice', values: ['sala_porta', 'setor', 'corredor', 'direcional', 'personalizada'], captions: ['Sala / Porta', 'Setor', 'Corredor', 'Direcional', 'Personalizada'], initial: 'sala_porta' },
+		{ name: 'arrow_direction', caption: 'Direção da seta:', type: 'choice', values: ['right', 'left', 'up', 'down'], captions: ['Direita →', 'Esquerda ←', 'Para cima ↑', 'Para baixo ↓'], initial: 'right' },
+		{ name: 'arrow_size', caption: 'Tamanho da seta direcional (mm):', type: 'float', initial: 18.0 },
+		{ name: 'arrow_stroke_width', caption: 'Espessura da seta direcional (mm):', type: 'float', initial: 1.2 },
+		{ name: 'arrow_text_gap', caption: 'Espaço entre seta e texto (mm):', type: 'float', initial: 8.0 },
 		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
 		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
 		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
@@ -780,6 +898,7 @@ function main(params)
 	
 	parameters = params;
 	master_dot = null;
+	applyPlatePreset();
 	
 	var formFactor = parameters.form_size / 10.0;
 	parameters.dot_distance = parameters.dot_distance + 0.7 * formFactor;
