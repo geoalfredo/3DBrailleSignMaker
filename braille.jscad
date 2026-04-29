@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.3c NFC: texto latino por traços, Braille abaixo, placa personalizada e símbolo NFC no canto superior direito com texto centralizado.
+// Versão 2.3d: texto latino com traços arredondados, Braille abaixo, placa personalizada e símbolo NFC no canto superior direito.
 
 var characters =
 {
@@ -390,18 +390,13 @@ function latinStrokeSegment(x1, y1, x2, y2, scale, xOffset, yTop)
 	var sy1 = yTop - y1 * scale;
 	var sx2 = xOffset + x2 * scale;
 	var sy2 = yTop - y2 * scale;
-	var dx = sx2 - sx1;
-	var dy = sy2 - sy1;
-	var length = Math.sqrt(dx*dx + dy*dy);
-	if (length < 0.001)
-		length = parameters.latin_stroke_width;
-	var angle = Math.atan2(dy, dx) * 180.0 / Math.PI;
-	var zHeight = parameters.latin_height;
-	var stroke = parameters.latin_stroke_width;
-	var obj = CSG.cube({ center: [0, 0, zHeight/2], radius: [length/2, stroke/2, zHeight/2] });
-	obj = obj.rotateZ(angle).translate([(sx1+sx2)/2, (sy1+sy2)/2, 0]);
-	return obj.setColor(colorDot[0], colorDot[1], colorDot[2]);
+
+	// Usa o mesmo método do símbolo NFC: segmento retangular + tampas cilíndricas.
+	// Isso arredonda as extremidades dos traços e reduz o efeito serrilhado/vértices
+	// quando a espessura do texto latino é aumentada.
+	return raisedStrokeSegment(sx1, sy1, sx2, sy2, parameters.latin_height, parameters.latin_stroke_width, parameters.resolution);
 }
+
 
 function latinTextObject(text, plateWidth, y)
 {
@@ -532,7 +527,7 @@ function nfcIconObject(plateWidth, plateHeight)
 
 	var size = parameters.nfc_size;
 	var x0 = plateWidth - parameters.nfc_margin_right - size;
-	var yTop = -parameters.nfc_margin_bottom; // posição superior: margem medida a partir do topo da placa
+	var yTop = -plateHeight + parameters.nfc_margin_bottom + size;
 	var scale = size / 100.0;
 	var zHeight = parameters.nfc_height;
 	var strokeWidth = parameters.nfc_stroke_width;
@@ -772,10 +767,10 @@ function getParameterDefinitions()
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
 
 		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC</span>', type: 'text', initial: '' },
-		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto superior direito?', type: 'bool', initial: true },
+		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
 		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 22.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
-		{ name: 'nfc_margin_bottom', caption: 'Margem superior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
+		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
 		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
 		{ name: 'nfc_text_size', caption: 'Tamanho da fonte do texto NFC:', type: 'float', initial: 5.2 },
