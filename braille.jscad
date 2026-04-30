@@ -706,16 +706,19 @@ function generate(text)
 
 	if (parameters.stands)
 	{
-		var standDiameter = 10.0;
-		var standHeight = 0.3;
-		var bounds = result.getBounds();
-		var standCircle = CSG.cylinder({ start: [0, 0, 0], end: [0, 0, standHeight], radius: standDiameter/2, resolution: parameters.resolution });
-		var stand = CSG.cube({ center: [0, parameters.plate_thickness/2, standHeight/2], radius: [bounds[1].x + standDiameter/2, parameters.plate_thickness/2, standHeight/2] });
-		stand = stand.union(standCircle.translate([bounds[0].x - standDiameter/2, parameters.plate_thickness/2, 0]));
-		stand = stand.union(standCircle.translate([bounds[1].x + standDiameter/2, parameters.plate_thickness/2, 0]));
-		stand = stand.setColor(colorSupport[0], colorSupport[1], colorSupport[2]);
+		// Brim antiempenamento: base fina e destacável ao redor da área de contato da placa.
+		// Diferente dos apoios antigos, ele aumenta a área de aderência na mesa de impressão
+		// ao longo de toda a extensão da placa, reduzindo o risco de empenamento.
+		var brimWidth = parameters.brim_width || 6.0;
+		var brimHeight = parameters.brim_height || 0.3;
 
-		result = result.union(stand);
+		var brim = CSG.cube({
+			center: [0, parameters.plate_thickness/2, brimHeight/2],
+			radius: [plateWidth/2 + brimWidth, parameters.plate_thickness/2 + brimWidth, brimHeight/2]
+		});
+
+		brim = brim.setColor(colorSupport[0], colorSupport[1], colorSupport[2]);
+		result = result.union(brim);
 	}
 
 	return result;
@@ -778,7 +781,9 @@ function getParameterDefinitions()
 
 		{ name: '_sep_6', caption: '<span class="menuBlockTitleOnly">6 - Impressão 3D</span>', type: 'text', initial: '' },
 		{ name: 'reference_corner', caption: 'Gerar canto de referência?', type: 'bool', initial: true },
-		{ name: 'stands', caption: 'Gerar apoios para impressão?', type: 'bool', initial: true },
+		{ name: 'stands', caption: 'Gerar brim antiempenamento para impressão?', type: 'bool', initial: true },
+		{ name: 'brim_width', caption: 'Largura do brim antiempenamento (mm):', type: 'float', initial: 6.0 },
+		{ name: 'brim_height', caption: 'Altura do brim antiempenamento (mm):', type: 'float', initial: 0.3 },
 
 		{ name: 'resolution', caption: 'Resolução', type: 'int', initial: 16, visible: false },
 		{ name: 'dot_shape', caption: 'Formato do ponto', type: 'choice', values: ['sphere', 'cylinder', 'smooth'], captions: ['Esfera', 'Cilindro', 'Plano'], initial: 'smooth', visible: false }
