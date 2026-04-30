@@ -372,7 +372,7 @@ function latinCharData(ch)
 function latinLineWidth(line)
 {
 	var cell = parameters.latin_size / 7.0;
-	var spacing = (typeof parameters.latin_letter_spacing == 'undefined') ? 1.5 : parameters.latin_letter_spacing;
+	var spacing = (typeof parameters.latin_letter_spacing == 'number') ? parameters.latin_letter_spacing : cell * 1.15;
 	var width = 0;
 	for (var i=0; i<line.length; i++)
 	{
@@ -407,7 +407,7 @@ function latinTextObject(text, plateWidth, y)
 	var lines = cleanText.split("\n");
 	var result = new CSG();
 	var cell = parameters.latin_size / 7.0;
-	var spacing = (typeof parameters.latin_letter_spacing == 'undefined') ? 1.5 : parameters.latin_letter_spacing;
+	var spacing = (typeof parameters.latin_letter_spacing == 'number') ? parameters.latin_letter_spacing : cell * 1.15;
 	var lineHeight = parameters.latin_size * 1.45;
 
 	for (var i=0; i<lines.length; i++)
