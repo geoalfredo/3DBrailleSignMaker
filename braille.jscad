@@ -744,7 +744,7 @@ function getParameterDefinitions()
 
 	var parameterDefinitions = [
 		{ name: '_sep_1', caption: uiStyle + '<span class="menuBlockTitleOnly">1 - Texto principal</span>', type: 'text', initial: '' },
-		{ name: 'text', caption: 'Texto da placa:', type: 'longtext', initial: 'Olá Mundo' },
+		{ name: 'text', caption: 'Texto da placa:', type: 'longtext', initial: 'IFRS Caxias do Sul' },
 
 		{ name: '_sep_2', caption: '<span class="menuBlockTitleOnly">2 - Alfabeto latino</span>', type: 'text', initial: '' },
 		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
