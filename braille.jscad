@@ -7,7 +7,7 @@ var colorPlate = [1.0, 1.0, 1.0];
 var colorInside = [0.0, 0.0, 0.0];
 var colorSupport = [0.7, 1, 0.7];
 var colorLatin = [0.2, 0.2, 0.2];
-// Versão 2.3d: texto latino com traços arredondados, Braille abaixo, placa personalizada e símbolo NFC no canto superior direito.
+// Versão final 1.1: texto latino com traços arredondados, Braille abaixo, placa personalizada e símbolo NFC no canto superior direito.
 
 var characters =
 {
@@ -527,7 +527,7 @@ function nfcIconObject(plateWidth, plateHeight)
 
 	var size = parameters.nfc_size;
 	var x0 = plateWidth - parameters.nfc_margin_right - size;
-	var yTop = -plateHeight + parameters.nfc_margin_bottom + size;
+	var yTop = -parameters.nfc_margin_bottom; // posição superior: margem medida a partir do topo da placa
 	var scale = size / 100.0;
 	var zHeight = parameters.nfc_height;
 	var strokeWidth = parameters.nfc_stroke_width;
@@ -767,10 +767,10 @@ function getParameterDefinitions()
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 90.0 },
 
 		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC</span>', type: 'text', initial: '' },
-		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto inferior direito?', type: 'bool', initial: true },
+		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto superior direito?', type: 'bool', initial: true },
 		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 22.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
-		{ name: 'nfc_margin_bottom', caption: 'Margem inferior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
+		{ name: 'nfc_margin_bottom', caption: 'Margem superior do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
 		{ name: 'nfc_stroke_width', caption: 'Espessura do traço do símbolo NFC (mm):', type: 'float', initial: 1.2 },
 		{ name: 'nfc_text_size', caption: 'Tamanho da fonte do texto NFC:', type: 'float', initial: 5.2 },
