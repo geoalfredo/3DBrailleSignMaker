@@ -608,6 +608,14 @@ function generate(text)
 
 	var latinDims = latinTextDimensions(originalText);
 	var extraLatinHeight = parameters.latin_enabled ? (latinDims[1] + parameters.latin_gap) : 0;
+
+	// Espaçamento extra entre parágrafos/linhas em Braille.
+	// Valor 1.0 = acrescenta uma cela Braille vazia entre uma linha e outra.
+	// Valor 0.0 = comportamento anterior, sem espaço extra.
+	var brailleParagraphSpacingCells = Math.max(0, parameters.braille_paragraph_spacing_cells || 0);
+	var brailleExtraLineSpacing = brailleParagraphSpacingCells * parameters.line_height;
+	var brailleLineAdvance = parameters.line_height + brailleExtraLineSpacing;
+
 	var offset = new CSG.Vector3D(0, -parameters.plate_margin - extraLatinHeight, 0);
 
 	var isMultiCharForm = false;
@@ -659,7 +667,7 @@ function generate(text)
 			textWidth = Math.max(textWidth, lineWidth);
 
 		var characterDots = characterByCode(charCode);
-		var position = offset.plus(new CSG.Vector3D(parameters.form_distance * (lineWidth-1), parameters.line_height * -(numLines-1), 0));
+		var position = offset.plus(new CSG.Vector3D(parameters.form_distance * (lineWidth-1), brailleLineAdvance * -(numLines-1), 0));
 		for (var cp=0; cp < characterDots.length; cp++)
 			characterDots[cp] = characterDots[cp].translate([position.x, position.y, position.z]);
 
@@ -669,7 +677,7 @@ function generate(text)
 	}
 
 	var brailleWidth = textWidth * parameters.form_distance;
-	var brailleHeight = numLines * parameters.line_height;
+	var brailleHeight = parameters.line_height + Math.max(0, numLines-1) * brailleLineAdvance;
 	var autoPlateWidth = Math.max(brailleWidth, latinDims[0]) + parameters.plate_margin * 2;
 	var plateWidth = parameters.fixed_plate_size ? parameters.plate_width : autoPlateWidth;
 	var brailleStartX = parameters.plate_margin; // Braille também alinhado à esquerda
@@ -760,6 +768,7 @@ function getParameterDefinitions()
 		{ name: '_sep_3', caption: '<span class="menuBlockTitleOnly">3 - Alfabeto Braille</span>', type: 'text', initial: '' },
 		{ name: 'dot_height', caption: 'Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
 		{ name: 'dot_diameter', caption: 'Diâmetro do ponto [default: 1.9mm]:', type: 'range', initial: 1.9, begin: 1.2, end: 2.0, step: 0.01 },
+		{ name: 'braille_paragraph_spacing_cells', caption: 'Espaçamento extra entre parágrafos em Braille (celas vazias):', type: 'float', initial: 1.0 },
 		{ name: 'form_size', caption: 'Tamanho do formulário [0mm - 10mm]', type: 'float', initial: 5.0, visible: false },
 		{ name: 'dot_distance', caption: 'Distância entre pontos [default: 2.7mm]:', type: 'float', initial: 2.7, begin: 1.6, end: 2.7, step: 0.01, visible: false },
 
@@ -814,4 +823,3 @@ function main(params)
 	
 	return result;
 }
-
