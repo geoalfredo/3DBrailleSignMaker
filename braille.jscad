@@ -714,7 +714,7 @@ function generate(text)
 
 	if (parameters.stands)
 	{
-		// Brim antiempenamento: base fina e destacável ao redor da área de contato da placa.
+		// Borda antiempenamento: base fina e destacável ao redor da área de contato da placa.
 		// Diferente dos apoios antigos, ele aumenta a área de aderência na mesa de impressão
 		// ao longo de toda a extensão da placa, reduzindo o risco de empenamento.
 		var brimWidth = parameters.brim_width || 6.0;
@@ -757,7 +757,7 @@ function getParameterDefinitions()
 		{ name: '_sep_2', caption: '<span class="menuBlockTitleOnly">2 - Alfabeto latino</span>', type: 'text', initial: '' },
 		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
 		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
-		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.6 },
+		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 1.0 },
 		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 1.0 },
 		{ name: 'latin_letter_spacing', caption: 'Espaçamento entre caracteres do texto latino (mm):', type: 'float', initial: 1.5 },
 		{ name: 'latin_gap', caption: 'Espaço entre texto latino e Braille (mm):', type: 'float', initial: 3.0 },
@@ -768,7 +768,7 @@ function getParameterDefinitions()
 		{ name: '_sep_3', caption: '<span class="menuBlockTitleOnly">3 - Alfabeto Braille</span>', type: 'text', initial: '' },
 		{ name: 'dot_height', caption: 'Altura do ponto [default: 0.75mm]:', type: 'range', initial: 0.75, begin: 0.6, end: 0.8, step: 0.01 },
 		{ name: 'dot_diameter', caption: 'Diâmetro do ponto [default: 1.9mm]:', type: 'range', initial: 1.9, begin: 1.2, end: 2.0, step: 0.01 },
-		{ name: 'braille_paragraph_spacing_cells', caption: 'Espaçamento extra entre parágrafos em Braille (celas vazias):', type: 'float', initial: 1.0 },
+		{ name: 'braille_paragraph_spacing_cells', caption: 'Espaçamento extra entre parágrafos em Braille (celas vazias):', type: 'float', initial: 0.4 },
 		{ name: 'form_size', caption: 'Tamanho do formulário [0mm - 10mm]', type: 'float', initial: 5.0, visible: false },
 		{ name: 'dot_distance', caption: 'Distância entre pontos [default: 2.7mm]:', type: 'float', initial: 2.7, begin: 1.6, end: 2.7, step: 0.01, visible: false },
 
@@ -776,12 +776,12 @@ function getParameterDefinitions()
 		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 3.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
-		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 170.0 },
+		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 190.0 },
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 33.0 },
 
 		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC - placa com audiodescrição</span>', type: 'text', initial: '' },
 		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto superior direito?', type: 'bool', initial: true },
-		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 18.0 },
+		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 15.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
 		{ name: 'nfc_margin_bottom', caption: 'Margem superior do símbolo NFC (mm):', type: 'float', initial: 5.0 },
 		{ name: 'nfc_height', caption: 'Altura do relevo do símbolo NFC (mm):', type: 'float', initial: 0.6 },
@@ -790,9 +790,9 @@ function getParameterDefinitions()
 
 		{ name: '_sep_6', caption: '<span class="menuBlockTitleOnly">6 - Impressão 3D</span>', type: 'text', initial: '' },
 		{ name: 'reference_corner', caption: 'Gerar canto de referência?', type: 'bool', initial: true },
-		{ name: 'stands', caption: 'Gerar brim antiempenamento para impressão?', type: 'bool', initial: true },
-		{ name: 'brim_width', caption: 'Largura do brim antiempenamento (mm):', type: 'float', initial: 6.0 },
-		{ name: 'brim_height', caption: 'Altura do brim antiempenamento (mm):', type: 'float', initial: 0.3 },
+		{ name: 'stands', caption: 'Gerar borda antiempenamento para impressão?', type: 'bool', initial: false },
+		{ name: 'brim_width', caption: 'Largura do borda antiempenamento (mm):', type: 'float', initial: 6.0 },
+		{ name: 'brim_height', caption: 'Altura do borda antiempenamento (mm):', type: 'float', initial: 0.3 },
 
 		{ name: 'resolution', caption: 'Resolução', type: 'int', initial: 16, visible: false },
 		{ name: 'dot_shape', caption: 'Formato do ponto', type: 'choice', values: ['sphere', 'cylinder', 'smooth'], captions: ['Esfera', 'Cilindro', 'Plano'], initial: 'smooth', visible: false }
