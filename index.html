@@ -511,7 +511,20 @@
 #viewer #statusActionRow > a {
 	display: none !important;
 }
+/* Botão Download STL com a mesma cor do botão Cancelar */
+#viewer #statusDownloadRow .stl-download-link {
+	color: #ffffff !important;
+	background-color: #b42318 !important;
+}
 
+#viewer #statusDownloadRow .stl-download-link:hover {
+	background-color: #8f1d14 !important;
+}
+
+#viewer #statusDownloadRow .stl-download-link:focus {
+	outline: 3px solid rgba(180, 35, 24, 0.35);
+	outline-offset: 3px;
+}
 </style>
 <link rel="stylesheet" href="openjscad.css" type="text/css" />
 <link rel="stylesheet" href="custom.css" type="text/css" />
