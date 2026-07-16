@@ -387,6 +387,94 @@
 	margin-right: auto;
 	text-align: center;
 }
+
+/* Ordem definitiva da barra de ações */
+#viewer .statusdiv {
+	display: block !important;
+	padding: 14px 0 !important;
+}
+
+#viewer #statusActionRow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+/* 1. Gerar modelo 3D */
+#viewer #statusActionRow > #generate3DStatusButton {
+	order: 1;
+	margin: 0 !important;
+}
+
+/* 2. Processando/Pronto + Cancelar */
+#viewer #statusProcessGroup {
+	order: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 42px;
+}
+
+#viewer #statusProcessGroup > span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 150px;
+	min-height: 42px;
+	padding: 0 16px;
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.2;
+	text-align: center;
+	color: #245c31;
+	background-color: #eaf5ec;
+	border: 1px solid #afd1b6;
+	border-radius: 8px;
+	box-sizing: border-box;
+}
+
+#viewer #statusProcessGroup > button {
+	margin: 0 !important;
+	padding: 10px 16px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #fff;
+	background-color: #b42318;
+	border: 0;
+	border-radius: 8px;
+	cursor: pointer;
+	box-shadow: 0 3px 7px rgba(0, 0, 0, 0.20);
+}
+
+#viewer #statusProcessGroup > button:hover {
+	background-color: #8f1d14;
+}
+
+/* 3. Gerar STL */
+#viewer #statusActionRow > button:not(#generate3DStatusButton) {
+	order: 3;
+	margin: 0 !important;
+}
+
+/* Download fica em uma nova linha abaixo dos três controles */
+#viewer .statusdiv > a,
+#viewer .statusdiv > a[download],
+#viewer .statusdiv > a[href^="blob:"] {
+	display: block;
+	width: fit-content;
+	margin: 12px auto 4px;
+	text-align: center;
+}
+
+/* O seletor de formato continua oculto */
+#viewer .statusdiv select {
+	display: none !important;
+}
+
 </style>
 <link rel="stylesheet" href="openjscad.css" type="text/css" />
 <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -410,6 +498,110 @@
 		};
 	}
 
+	var statusBarObserver = null;
+	var arrangingStatusBar = false;
+
+	function arrangeStatusBarControls()
+	{
+		if (arrangingStatusBar)
+			return;
+
+		var statusBar = document.querySelector("#viewer .statusdiv");
+
+		if (!statusBar)
+			return;
+
+		arrangingStatusBar = true;
+
+		var row = document.getElementById("statusActionRow");
+
+		if (!row)
+		{
+			row = document.createElement("div");
+			row.id = "statusActionRow";
+			statusBar.insertBefore(row, statusBar.firstChild);
+		}
+
+		var generateButton =
+			document.getElementById("generate3DStatusButton");
+
+		var processGroup =
+			document.getElementById("statusProcessGroup");
+
+		if (!processGroup)
+		{
+			processGroup = document.createElement("div");
+			processGroup.id = "statusProcessGroup";
+		}
+
+		/*
+		 * O aviso de status pode estar diretamente na barra ou já ter
+		 * sido transferido para o grupo central.
+		 */
+		var statusMessage =
+			statusBar.querySelector("span") ||
+			processGroup.querySelector("span");
+
+		var buttons = statusBar.querySelectorAll("button");
+		var exportButton = null;
+		var cancelButton = null;
+
+		for (var i = 0; i < buttons.length; i++)
+		{
+			var currentButton = buttons[i];
+
+			if (currentButton.id === "generate3DStatusButton")
+				continue;
+
+			var buttonText =
+				(currentButton.textContent || "").toLowerCase();
+
+			if (
+				buttonText.indexOf("cancel") >= 0 ||
+				buttonText.indexOf("cancelar") >= 0 ||
+				buttonText.indexOf("abbrechen") >= 0
+			)
+			{
+				cancelButton = currentButton;
+			}
+			else if (buttonText.indexOf("stl") >= 0)
+			{
+				exportButton = currentButton;
+			}
+			else if (!exportButton)
+			{
+				/*
+				 * Na versão antiga do OpenJSCAD, o botão de exportação
+				 * pode não conter "STL" enquanto a interface é montada.
+				 */
+				exportButton = currentButton;
+			}
+		}
+
+		if (generateButton && generateButton.parentNode !== row)
+			row.appendChild(generateButton);
+
+		if (
+			statusMessage &&
+			statusMessage.parentNode !== processGroup
+		)
+			processGroup.appendChild(statusMessage);
+
+		if (
+			cancelButton &&
+			cancelButton.parentNode !== processGroup
+		)
+			processGroup.appendChild(cancelButton);
+
+		if (processGroup.parentNode !== row)
+			row.appendChild(processGroup);
+
+		if (exportButton && exportButton.parentNode !== row)
+			row.appendChild(exportButton);
+
+		arrangingStatusBar = false;
+	}
+
 	function addGenerate3DButtonToStatusBar()
 	{
 		var statusBar = document.querySelector("#viewer .statusdiv");
@@ -420,29 +612,45 @@
 			return;
 		}
 
-		if (document.getElementById("generate3DStatusButton"))
-			return;
+		var button =
+			document.getElementById("generate3DStatusButton");
 
-		var statusMessage = statusBar.querySelector("span");
-		var button = document.createElement("button");
-
-		button.id = "generate3DStatusButton";
-		button.type = "button";
-		button.textContent = "Gerar modelo 3D";
-		button.setAttribute(
-			"aria-label",
-			"Gerar ou atualizar a visualização do modelo tridimensional"
-		);
-
-		button.onclick = function()
+		if (!button)
 		{
-			parseParameters();
-		};
+			button = document.createElement("button");
+			button.id = "generate3DStatusButton";
+			button.type = "button";
+			button.textContent = "Gerar modelo 3D";
+			button.setAttribute(
+				"aria-label",
+				"Gerar ou atualizar a visualização do modelo tridimensional"
+			);
 
-		if (statusMessage)
-			statusBar.insertBefore(button, statusMessage);
-		else
-			statusBar.insertBefore(button, statusBar.firstChild);
+			button.onclick = function()
+			{
+				parseParameters();
+			};
+		}
+
+		arrangeStatusBarControls();
+
+		/*
+		 * O OpenJSCAD pode recriar o botão STL ou o botão Cancelar.
+		 * O observador mantém a ordem correta quando isso ocorrer.
+		 */
+		if (!statusBarObserver)
+		{
+			statusBarObserver = new MutationObserver(function()
+			{
+				setTimeout(arrangeStatusBarControls, 0);
+			});
+
+			statusBarObserver.observe(statusBar, {
+				childList: true,
+				subtree: true,
+				characterData: true
+			});
+		}
 	}
 
 	function onload()
