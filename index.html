@@ -293,6 +293,15 @@
 
 	box-sizing: border-box;
 }
+	/* Oculta o seletor de formato, pois o sistema exporta somente STL */
+#viewer .statusdiv select {
+	display: none !important;
+}
+
+/* Remove o espaço que existia entre o seletor e o botão */
+#viewer .statusdiv button {
+	margin-left: 0 !important;
+}
 </style>
 <link rel="stylesheet" href="openjscad.css" type="text/css" />
 <link rel="stylesheet" href="custom.css" type="text/css" />
