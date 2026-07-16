@@ -779,7 +779,7 @@ function getParameterDefinitions()
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 190.0 },
 		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 33.0 },
 
-		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC - placa com audiodescrição</span>', type: 'text', initial: '' },
+		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC - para placa com chip NFC para audiodescrição</span>', type: 'text', initial: '' },
 		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto superior direito?', type: 'bool', initial: true },
 		{ name: 'nfc_size', caption: 'Tamanho do símbolo NFC (mm):', type: 'float', initial: 15.0 },
 		{ name: 'nfc_margin_right', caption: 'Margem direita do símbolo NFC (mm):', type: 'float', initial: 7.0 },
