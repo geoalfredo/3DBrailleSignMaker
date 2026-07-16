@@ -475,6 +475,43 @@
 	display: none !important;
 }
 
+
+/* Linha exclusiva para o link de download do STL */
+#viewer #statusDownloadRow {
+	display: none;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin-top: 12px;
+	clear: both;
+}
+
+#viewer #statusDownloadRow .stl-download-link {
+	display: inline-block !important;
+	flex: none !important;
+	width: auto !important;
+	margin: 0 auto !important;
+	padding: 11px 24px;
+	font-size: 17px;
+	font-weight: 700;
+	text-align: center;
+	color: #fff;
+	background-color: #2b8a3e;
+	border-radius: 8px;
+	text-decoration: none;
+	box-shadow: 0 3px 7px rgba(0, 0, 0, 0.22);
+}
+
+#viewer #statusDownloadRow .stl-download-link:hover {
+	background-color: #237032;
+	box-shadow: 0 4px 9px rgba(0, 0, 0, 0.28);
+}
+
+/* Impede que o link de download permaneça na mesma linha dos botões */
+#viewer #statusActionRow > a {
+	display: none !important;
+}
+
 </style>
 <link rel="stylesheet" href="openjscad.css" type="text/css" />
 <link rel="stylesheet" href="custom.css" type="text/css" />
@@ -522,6 +559,19 @@
 			statusBar.insertBefore(row, statusBar.firstChild);
 		}
 
+		var downloadRow = document.getElementById("statusDownloadRow");
+
+		if (!downloadRow)
+		{
+			downloadRow = document.createElement("div");
+			downloadRow.id = "statusDownloadRow";
+
+			if (row.nextSibling)
+				statusBar.insertBefore(downloadRow, row.nextSibling);
+			else
+				statusBar.appendChild(downloadRow);
+		}
+
 		var generateButton =
 			document.getElementById("generate3DStatusButton");
 
@@ -534,47 +584,55 @@
 			processGroup.id = "statusProcessGroup";
 		}
 
-		/*
-		 * O aviso de status pode estar diretamente na barra ou já ter
-		 * sido transferido para o grupo central.
-		 */
 		var statusMessage =
 			statusBar.querySelector("span") ||
 			processGroup.querySelector("span");
 
-		var buttons = statusBar.querySelectorAll("button");
+		var controls = statusBar.querySelectorAll("button, a");
 		var exportButton = null;
 		var cancelButton = null;
+		var downloadControl = null;
 
-		for (var i = 0; i < buttons.length; i++)
+		for (var i = 0; i < controls.length; i++)
 		{
-			var currentButton = buttons[i];
+			var currentControl = controls[i];
 
-			if (currentButton.id === "generate3DStatusButton")
+			if (currentControl.id === "generate3DStatusButton")
 				continue;
 
-			var buttonText =
-				(currentButton.textContent || "").toLowerCase();
+			var controlText =
+				(currentControl.textContent || "").toLowerCase();
 
-			if (
-				buttonText.indexOf("cancel") >= 0 ||
-				buttonText.indexOf("cancelar") >= 0 ||
-				buttonText.indexOf("abbrechen") >= 0
+			var controlHref =
+				(currentControl.getAttribute("href") || "").toLowerCase();
+
+			var isDownload =
+				currentControl.tagName.toLowerCase() === "a" &&
+				(
+					currentControl.hasAttribute("download") ||
+					controlHref.indexOf("blob:") === 0 ||
+					controlText.indexOf("download") >= 0 ||
+					controlText.indexOf("baixar") >= 0
+				);
+
+			if (isDownload)
+			{
+				downloadControl = currentControl;
+			}
+			else if (
+				controlText.indexOf("cancel") >= 0 ||
+				controlText.indexOf("cancelar") >= 0 ||
+				controlText.indexOf("abbrechen") >= 0
 			)
 			{
-				cancelButton = currentButton;
+				cancelButton = currentControl;
 			}
-			else if (buttonText.indexOf("stl") >= 0)
+			else if (
+				currentControl.tagName.toLowerCase() === "button" &&
+				controlText.indexOf("stl") >= 0
+			)
 			{
-				exportButton = currentButton;
-			}
-			else if (!exportButton)
-			{
-				/*
-				 * Na versão antiga do OpenJSCAD, o botão de exportação
-				 * pode não conter "STL" enquanto a interface é montada.
-				 */
-				exportButton = currentButton;
+				exportButton = currentControl;
 			}
 		}
 
@@ -598,6 +656,22 @@
 
 		if (exportButton && exportButton.parentNode !== row)
 			row.appendChild(exportButton);
+
+		if (downloadControl)
+		{
+			downloadControl.className +=
+				(downloadControl.className ? " " : "") +
+				"stl-download-link";
+
+			if (downloadControl.parentNode !== downloadRow)
+				downloadRow.appendChild(downloadControl);
+
+			downloadRow.style.display = "flex";
+		}
+		else
+		{
+			downloadRow.style.display = "none";
+		}
 
 		arrangingStatusBar = false;
 	}
