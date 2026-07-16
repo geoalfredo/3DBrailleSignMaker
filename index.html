@@ -793,8 +793,53 @@
 			parameterButton.innerHTML = "Gerar modelo 3D";
 	}
 
+	/*
+	 * Remove o download da placa anterior antes de gerar um novo modelo.
+	 * Como o link foi transferido para uma linha própria, ele precisa ser
+	 * limpo manualmente ao iniciar uma nova geração.
+	 */
+	function clearSTLDownload()
+	{
+		var downloadRow =
+			document.getElementById("statusDownloadRow");
+
+		if (!downloadRow)
+			return;
+
+		var links = downloadRow.querySelectorAll("a");
+
+		for (var i = 0; i < links.length; i++)
+		{
+			var href = links[i].getAttribute("href") || "";
+
+			// Libera o endereço temporário criado pelo navegador.
+			if (
+				href.indexOf("blob:") === 0 &&
+				window.URL &&
+				window.URL.revokeObjectURL
+			)
+			{
+				try
+				{
+					window.URL.revokeObjectURL(href);
+				}
+				catch (error)
+				{
+					// A limpeza visual continua mesmo se o URL já tiver expirado.
+				}
+			}
+		}
+
+		while (downloadRow.firstChild)
+			downloadRow.removeChild(downloadRow.firstChild);
+
+		downloadRow.style.display = "none";
+	}
+
 	function parseParameters()
 	{
+		clearSTLDownload();
+
 		if (gProcessor)
 			gProcessor.rebuildSolid();
 	}
