@@ -2,10 +2,6 @@
 
 Gerador online de placas acessíveis em Braille para impressão 3D, com suporte a texto em alfabeto latino, personalização de dimensões da placa e símbolo NFC para audiodescrição.
 
-## Acesso online
-
-https://3dbraillesignmaker.netlify.app
-
 ## Sobre o projeto
 
 O **3DBrailleSignMaker** é uma versão derivada, amplamente modificada e expandida de projetos open-source anteriores voltados à geração de placas em Braille.
@@ -40,8 +36,9 @@ Este projeto inclui partes derivadas e modificadas de softwares open-source ante
 
 ## Desenvolvimento adicional desta versão
 
-**Alfredo Costa**  
-IFRS Campus Caxias do Sul
+**Alfredo Costa, Marília Morais Thomazi, Eduardo Thomazi, Kelen Berra de Mello**  
+Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Sul - Campus Caxias do Sul
+Projeto: Laboratório de acessibilidade e ações inclusivas (ano 3), desenvolvido com recursos do Edital PROEN PROEN Nº 25/2025 – Fomento a projetos de ensino 2026.
 
 ## Aviso
 
