@@ -630,6 +630,12 @@
 			{
 				parseParameters();
 			};
+
+			/*
+			 * O botão precisa entrar no DOM antes da organização da barra.
+			 * Sem isso, getElementById() não consegue encontrá-lo.
+			 */
+			statusBar.insertBefore(button, statusBar.firstChild);
 		}
 
 		arrangeStatusBarControls();
