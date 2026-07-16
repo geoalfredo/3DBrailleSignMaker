@@ -393,20 +393,12 @@
 
 <script>
 
-	var gProcessor=null;
+	var gProcessor = null;
 	var detailsOffset = 4;
 	var detailsAmount = 7;
 
-	// Show all exceptions to the user:
 	OpenJsCad.AlertUserOfUncaughtExceptions();
 
-
-	/*
-	 * O OpenJsCad original oferece STL e X3D.
-	 * Esta versão do 3DBrailleSignMaker trabalha somente com STL.
-	 * A função abaixo altera a lista na origem, inclusive após
-	 * novos carregamentos ou reconstruções do modelo.
-	 */
 	function configureSTLOnly()
 	{
 		OpenJsCad.Processor.prototype.supportedFormatsForCurrentObject = function()
@@ -418,138 +410,106 @@
 		};
 	}
 
+	function addGenerate3DButtonToStatusBar()
+	{
+		var statusBar = document.querySelector("#viewer .statusdiv");
+
+		if (!statusBar)
+		{
+			setTimeout(addGenerate3DButtonToStatusBar, 200);
+			return;
+		}
+
+		if (document.getElementById("generate3DStatusButton"))
+			return;
+
+		var statusMessage = statusBar.querySelector("span");
+		var button = document.createElement("button");
+
+		button.id = "generate3DStatusButton";
+		button.type = "button";
+		button.textContent = "Gerar modelo 3D";
+		button.setAttribute(
+			"aria-label",
+			"Gerar ou atualizar a visualização do modelo tridimensional"
+		);
+
+		button.onclick = function()
+		{
+			parseParameters();
+		};
+
+		if (statusMessage)
+			statusBar.insertBefore(button, statusMessage);
+		else
+			statusBar.insertBefore(button, statusBar.firstChild);
+	}
+
 	function onload()
 	{
 		configureSTLOnly();
-		gProcessor = new OpenJsCad.Processor(document.getElementById("viewer"));
-		jQuery.get('braille.jscad', function(data)
-		{
-			gProcessor.setJsCad(data, "braille.jscad");
-			//showDetails(false);
-		});
-		function addGenerate3DButtonToStatusBar()
-{
-	var statusBar = document.querySelector("#viewer .statusdiv");
-	var statusMessage = statusBar
-		? statusBar.querySelector("span")
-		: null;
 
-	if (!statusBar || !statusMessage)
-	{
-		setTimeout(addGenerate3DButtonToStatusBar, 200);
-		return;
+		gProcessor = new OpenJsCad.Processor(
+			document.getElementById("viewer")
+		);
+
+		jQuery.get("braille.jscad")
+			.done(function(data)
+			{
+				gProcessor.setJsCad(data, "braille.jscad");
+				adaptControls();
+			})
+			.fail(function()
+			{
+				alert("Não foi possível carregar o arquivo braille.jscad.");
+			});
 	}
 
-	// Evita criar o botão mais de uma vez.
-	if (document.getElementById("generate3DStatusButton"))
-		return;
-
-	var button = document.createElement("button");
-
-	button.id = "generate3DStatusButton";
-	button.type = "button";
-	button.textContent = "Gerar modelo 3D";
-	button.setAttribute(
-		"aria-label",
-		"Gerar ou atualizar a visualização do modelo tridimensional"
-	);
-
-	button.onclick = function()
-	{
-		parseParameters();
-	};
-
-	// Insere o novo botão antes do aviso “Pronto”.
-	statusBar.insertBefore(button, statusMessage);
-}
-		adaptControls();
-	}
-	function addGenerate3DButtonToStatusBar()
-{
-	var statusBar = document.querySelector("#viewer .statusdiv");
-
-	if (!statusBar)
-	{
-		setTimeout(addGenerate3DButtonToStatusBar, 200);
-		return;
-	}
-
-	// Evita criar o botão mais de uma vez.
-	if (document.getElementById("generate3DStatusButton"))
-		return;
-
-	var statusMessage = statusBar.querySelector("span");
-
-	var button = document.createElement("button");
-
-	button.id = "generate3DStatusButton";
-	button.type = "button";
-	button.textContent = "Gerar modelo 3D";
-	button.setAttribute(
-		"aria-label",
-		"Gerar ou atualizar a visualização do modelo tridimensional"
-	);
-
-	button.onclick = function()
-	{
-		parseParameters();
-	};
-
-	// Coloca o botão antes da mensagem “Pronto” ou “Em processamento”.
-	if (statusMessage)
-		statusBar.insertBefore(button, statusMessage);
-	else
-		statusBar.insertBefore(button, statusBar.firstChild);
-}
 	function adaptControls()
 	{
+		var viewerElement = $("#viewer .viewer")[0];
+		var parameterButton = $("#viewer .parametersdiv button")[0];
+
+		if (!viewerElement || !parameterButton)
+		{
+			setTimeout(adaptControls, 200);
+			return;
+		}
+
 		if (gProcessor.viewer != null)
 			gProcessor.viewer.gl.clearColor(1, 1, 0.97, 1);
-		
-		$("#viewer .viewer")[0].style.backgroundColor = "white";
-		$("#viewer .parametersdiv button")[0].onclick = parseParameters;
-		
-		var moreElement = "<hr/><p><a id='more'></a></p>";
-		
-		$("#viewer .parametersdiv .parameterstable").after(moreElement);
-		
+
+		viewerElement.style.backgroundColor = "white";
+		parameterButton.onclick = parseParameters;
+
+		if (!document.getElementById("more"))
+		{
+			var moreElement = "<hr/><p><a id='more'></a></p>";
+			$("#viewer .parametersdiv .parameterstable").after(moreElement);
+		}
+
 		setLanguage("pt-br");
 		addGenerate3DButtonToStatusBar();
 	}
-	
+
 	function setLanguage(lang)
 	{
+		var parameterButton = $("#viewer .parametersdiv button")[0];
+
+		if (!parameterButton)
+			return;
+
 		if (lang == "german")
-		{
-			// var $statusBar = $("#viewer .statusdiv");
-			// $statusBar.children("span")[0].innerHTML = "Fertig."
-			
-			$("#viewer .parametersdiv button")[0].innerHTML = "3D Modell generieren";
-
-		} else if (lang == "pt-br") {
-			$("#viewer .parametersdiv button")[0].innerHTML = "Gerar modelo 3D";
-		}
-
+			parameterButton.innerHTML = "3D Modell generieren";
+		else if (lang == "pt-br")
+			parameterButton.innerHTML = "Gerar modelo 3D";
 	}
-	
-	// function showDetails(show)
-	// {
-	// 	var tableRows = $("#viewer .parametersdiv .parameterstable tr");
-		
-	// 	for (var i=detailsOffset; i < tableRows.length && i < detailsOffset+detailsAmount; i++)
-	// 	{
-	// 		tableRows[i].style.display = (show) ? "table-row" : "none";
-	// 	}
-		
-	// 	var moreLink = $("#more")[0];
-	// 	moreLink.innerHTML = (show) ? "Modo simples" : "Modo detalhado";
-	// 	moreLink.href = "javascript:showDetails(" + !show + ");";
-	// }
-	
+
 	function parseParameters()
-{
-	gProcessor.rebuildSolid();
-}
+	{
+		if (gProcessor)
+			gProcessor.rebuildSolid();
+	}
 
 </script>
 	<title>Texto para placa Braille 3D</title>
@@ -581,4 +541,3 @@
 		</footer>
 </body>
 </html>
-
