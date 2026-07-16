@@ -464,7 +464,43 @@
 }
 		adaptControls();
 	}
-	
+	function addGenerate3DButtonToStatusBar()
+{
+	var statusBar = document.querySelector("#viewer .statusdiv");
+
+	if (!statusBar)
+	{
+		setTimeout(addGenerate3DButtonToStatusBar, 200);
+		return;
+	}
+
+	// Evita criar o botão mais de uma vez.
+	if (document.getElementById("generate3DStatusButton"))
+		return;
+
+	var statusMessage = statusBar.querySelector("span");
+
+	var button = document.createElement("button");
+
+	button.id = "generate3DStatusButton";
+	button.type = "button";
+	button.textContent = "Gerar modelo 3D";
+	button.setAttribute(
+		"aria-label",
+		"Gerar ou atualizar a visualização do modelo tridimensional"
+	);
+
+	button.onclick = function()
+	{
+		parseParameters();
+	};
+
+	// Coloca o botão antes da mensagem “Pronto” ou “Em processamento”.
+	if (statusMessage)
+		statusBar.insertBefore(button, statusMessage);
+	else
+		statusBar.insertBefore(button, statusBar.firstChild);
+}
 	function adaptControls()
 	{
 		if (gProcessor.viewer != null)
