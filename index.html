@@ -659,14 +659,32 @@
 
 		if (downloadControl)
 		{
-			downloadControl.className +=
-				(downloadControl.className ? " " : "") +
-				"stl-download-link";
+			if (
+				(" " + downloadControl.className + " ")
+					.indexOf(" stl-download-link ") < 0
+			)
+			{
+				downloadControl.className +=
+					(downloadControl.className ? " " : "") +
+					"stl-download-link";
+			}
 
+			/*
+			 * O elemento de download pertence ao OpenJSCAD e deve
+			 * permanecer no DOM. O OpenJSCAD reutiliza o mesmo link
+			 * para os arquivos gerados posteriormente.
+			 */
 			if (downloadControl.parentNode !== downloadRow)
 				downloadRow.appendChild(downloadControl);
 
-			downloadRow.style.display = "flex";
+			var downloadIsReady =
+				gProcessor &&
+				gProcessor.hasOutputFile &&
+				downloadControl.style.display !== "none" &&
+				(downloadControl.getAttribute("href") || "") !== "";
+
+			downloadRow.style.display =
+				downloadIsReady ? "flex" : "none";
 		}
 		else
 		{
@@ -728,7 +746,14 @@
 			statusBarObserver.observe(statusBar, {
 				childList: true,
 				subtree: true,
-				characterData: true
+				characterData: true,
+				attributes: true,
+				attributeFilter: [
+					"style",
+					"href",
+					"download",
+					"class"
+				]
 			});
 		}
 	}
@@ -794,46 +819,25 @@
 	}
 
 	/*
-	 * Remove o download da placa anterior antes de gerar um novo modelo.
-	 * Como o link foi transferido para uma linha própria, ele precisa ser
-	 * limpo manualmente ao iniciar uma nova geração.
+	 * Oculta o download da placa anterior antes de gerar um novo modelo.
+	 * O link não é removido, pois o OpenJSCAD reutiliza o mesmo elemento
+	 * para disponibilizar os próximos arquivos STL.
 	 */
 	function clearSTLDownload()
 	{
 		var downloadRow =
 			document.getElementById("statusDownloadRow");
 
-		if (!downloadRow)
-			return;
+		if (downloadRow)
+			downloadRow.style.display = "none";
 
-		var links = downloadRow.querySelectorAll("a");
+		var downloadLink =
+			gProcessor && gProcessor.downloadOutputFileLink
+				? gProcessor.downloadOutputFileLink
+				: null;
 
-		for (var i = 0; i < links.length; i++)
-		{
-			var href = links[i].getAttribute("href") || "";
-
-			// Libera o endereço temporário criado pelo navegador.
-			if (
-				href.indexOf("blob:") === 0 &&
-				window.URL &&
-				window.URL.revokeObjectURL
-			)
-			{
-				try
-				{
-					window.URL.revokeObjectURL(href);
-				}
-				catch (error)
-				{
-					// A limpeza visual continua mesmo se o URL já tiver expirado.
-				}
-			}
-		}
-
-		while (downloadRow.firstChild)
-			downloadRow.removeChild(downloadRow.firstChild);
-
-		downloadRow.style.display = "none";
+		if (downloadLink)
+			downloadLink.style.display = "none";
 	}
 
 	function parseParameters()
