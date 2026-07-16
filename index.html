@@ -166,49 +166,37 @@
 	// Show all exceptions to the user:
 	OpenJsCad.AlertUserOfUncaughtExceptions();
 
+
+	/*
+	 * O OpenJsCad original oferece STL e X3D.
+	 * Esta versão do 3DBrailleSignMaker trabalha somente com STL.
+	 * A função abaixo altera a lista na origem, inclusive após
+	 * novos carregamentos ou reconstruções do modelo.
+	 */
+	function configureSTLOnly()
+	{
+		OpenJsCad.Processor.prototype.supportedFormatsForCurrentObject = function()
+		{
+			if (this.currentObject instanceof CSG)
+				return ["stl"];
+
+			throw new Error("Formato de objeto não suportado.");
+		};
+	}
+
 	function onload()
 	{
+		configureSTLOnly();
 		gProcessor = new OpenJsCad.Processor(document.getElementById("viewer"));
 		jQuery.get('braille.jscad', function(data)
 		{
 			gProcessor.setJsCad(data, "braille.jscad");
-			removeX3DOption();
 			//showDetails(false);
 		});
 		
 		adaptControls();
 	}
 	
-
-	function removeX3DOption()
-	{
-		var exportSelect = $("#viewer .statusdiv select")[0];
-
-		if (!exportSelect)
-		{
-			setTimeout(removeX3DOption, 200);
-			return;
-		}
-
-		for (var i = exportSelect.options.length - 1; i >= 0; i--)
-		{
-			var optionText = exportSelect.options[i].text.toUpperCase();
-			var optionValue = String(exportSelect.options[i].value).toUpperCase();
-
-			if (optionText === "X3D" || optionValue === "X3D")
-				exportSelect.remove(i);
-		}
-
-		for (var j = 0; j < exportSelect.options.length; j++)
-		{
-			if (exportSelect.options[j].text.toUpperCase() === "STL")
-			{
-				exportSelect.selectedIndex = j;
-				break;
-			}
-		}
-	}
-
 	function adaptControls()
 	{
 		if (gProcessor.viewer != null)
@@ -222,7 +210,6 @@
 		$("#viewer .parametersdiv .parameterstable").after(moreElement);
 		
 		setLanguage("pt-br");
-		removeX3DOption();
 	}
 	
 	function setLanguage(lang)
@@ -289,3 +276,4 @@
 		</footer>
 </body>
 </html>
+
