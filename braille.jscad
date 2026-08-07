@@ -756,8 +756,8 @@ function getParameterDefinitions()
 
 		{ name: '_sep_2', caption: '<span class="menuBlockTitleOnly">2 - Alfabeto latino</span>', type: 'text', initial: '' },
 		{ name: 'latin_enabled', caption: 'Gerar texto em alfabeto latino acima do Braille?', type: 'bool', initial: true },
-		{ name: 'latin_size', caption: 'Altura do texto latino (mm):', type: 'float', initial: 7.0 },
-		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 1.0 },
+		{ name: 'latin_size', caption: 'Tamanho da fonte do texto latino (mm):', type: 'float', initial: 7.0 },
+		{ name: 'latin_height', caption: 'Altura do relevo do texto latino (mm):', type: 'float', initial: 0.75 },
 		{ name: 'latin_stroke_width', caption: 'Espessura do traço do texto latino (mm):', type: 'float', initial: 1.0 },
 		{ name: 'latin_letter_spacing', caption: 'Espaçamento entre caracteres do texto latino (mm):', type: 'float', initial: 1.5 },
 		{ name: 'latin_gap', caption: 'Espaço entre texto latino e Braille (mm):', type: 'float', initial: 3.0 },
@@ -773,11 +773,11 @@ function getParameterDefinitions()
 		{ name: 'dot_distance', caption: 'Distância entre pontos [padrão: 2.7mm]:', type: 'float', initial: 2.7, begin: 1.6, end: 2.7, step: 0.01, visible: false },
 
 		{ name: '_sep_4', caption: '<span class="menuBlockTitleOnly">4 - Tamanho da placa</span>', type: 'text', initial: '' },
-		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 3.0 },
+		{ name: 'plate_thickness', caption: 'Espessura da placa (mm):', type: 'float', initial: 2.0 },
 		{ name: 'plate_margin', caption: 'Margem da placa (mm):', type: 'float', initial: 5.0 },
 		{ name: 'fixed_plate_size', caption: 'Usar tamanho personalizado da placa?', type: 'bool', initial: true },
 		{ name: 'plate_width', caption: 'Largura personalizada da placa (mm):', type: 'float', initial: 190.0 },
-		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 33.0 },
+		{ name: 'plate_height', caption: 'Altura personalizada da placa (mm):', type: 'float', initial: 70.0 },
 
 		{ name: '_sep_5', caption: '<span class="menuBlockTitleOnly">5 - Símbolo NFC - para placa com chip NFC para audiodescrição</span>', type: 'text', initial: '' },
 		{ name: 'nfc_enabled', caption: 'Inserir símbolo NFC no canto superior direito?', type: 'bool', initial: true },
