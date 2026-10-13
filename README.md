@@ -34,9 +34,13 @@ Os autores originais e os créditos correspondentes estão relacionados no arqui
 
 ## Licença
 
-O **3DBrailleSignMaker** é distribuído sob a **Licença MIT**, que permite o uso, a cópia, a modificação e a redistribuição do software, inclusive para fins comerciais, desde que sejam respeitadas as condições estabelecidas na licença.
+O 3DBrailleSignMaker é distribuído sob a Licença MIT, que permite o uso, a cópia, a modificação e a redistribuição do software, inclusive para fins comerciais, desde que sejam respeitadas as condições estabelecidas na licença.
 
-O projeto inclui partes derivadas e modificadas de softwares de código aberto anteriores, preservando os créditos e avisos de direitos autorais conforme as condições de licenciamento aplicáveis.
+O projeto incorpora componentes derivados de softwares de código aberto anteriores, preservando os respectivos créditos, direitos autorais e condições de licenciamento.
+
+Licença do 3DBrailleSignMaker: LICENSE
+
+Licenças e créditos dos componentes de terceiros: THIRD_PARTY_LICENSES.md
 
 Para mais informações, consulte o arquivo [`LICENSE`](LICENSE).
 
