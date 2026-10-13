@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "Se você utilizar o 3DBrailleSignMaker em pesquisas, publicações ou projetos, cite este software conforme os dados abaixo."
+type: software
+title: "3DBrailleSignMaker: gerador de placas acessíveis em Braille para impressão 3D"
+
+authors:
+  - family-names: Costa
+    given-names: Alfredo
+    affiliation: "Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Sul (IFRS) - Campus Caxias do Sul"
+
+  - family-names: Thomazi
+    given-names: Marília Morais
+    affiliation: "Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Sul (IFRS) - Campus Caxias do Sul"
+
+  - family-names: Thomazi
+    given-names: Eduardo
+    affiliation: "Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Sul (IFRS) - Campus Caxias do Sul"
+
+  - family-names: de Mello
+    given-names: Kelen Berra
+    affiliation: "Instituto Federal de Educação, Ciência e Tecnologia do Rio Grande do Sul (IFRS) - Campus Caxias do Sul"
+
+repository-code: "https://github.com/geoalfredo/3DBrailleSignMaker"
+url: "https://github.com/geoalfredo/3DBrailleSignMaker"
+license: MIT
+date-released: 2026-07-07
+keywords:
+  - Braille
+  - acessibilidade
+  - tecnologia assistiva
+  - impressão 3D
+  - fabricação digital
+  - educação inclusiva
+  
