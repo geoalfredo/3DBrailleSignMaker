@@ -95,15 +95,32 @@ The original licensing header must remain intact in the distributed file.
 
 **Component:** `openjscad.js`
 
-**Purpose:** Parametric 3D modeling and model visualization.
+**Purpose:** Parametric 3D modeling, geometric processing and model visualization.
 
-**Project:** OpenJSCAD.
+**Original project:** OpenJsCad.
 
-**Project repository:** https://github.com/jscad/OpenJSCAD.org
+**Original repository:** https://github.com/joostn/OpenJsCad
 
-The OpenJSCAD project is generally distributed under the MIT License, unless otherwise specified.
+**Original project website:** https://joostn.github.io/OpenJsCad/
 
-The exact provenance and licensing notices applicable to the legacy version incorporated into the 3DBrailleSignMaker should be verified against the corresponding historical source release.
+**License:** MIT License.
+
+**Original copyright notices:**
+
+- Copyright (c) 2012 Joost Nieuwenhuijse
+- Copyright (c) 2011 Evan Wallace
+
+**Provenance:**
+
+The `openjscad.js` file incorporated into 3DBrailleSignMaker is identical to the corresponding file in the CTA-IFRS/Text2Braille3d repository (branch `new-ui`).
+
+The original OpenJsCad project was developed by Joost Nieuwenhuijse, based on earlier work by Evan Wallace, and distributed under the MIT License.
+
+The original copyright notices and license conditions are acknowledged and preserved in this document.
+
+**License compliance:**
+
+Redistribution and modification are permitted under the MIT License, provided that the applicable copyright and permission notices are retained.
 
 ## 6. MIT License — Permission and Disclaimer
 
